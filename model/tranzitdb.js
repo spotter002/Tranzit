@@ -33,7 +33,7 @@ const driverSchema = new Schema({
   password: { type: String },
   vehicleType: { type: String, enum: ['boda', 'pickup', 'truck'], required: true },
   vehicleDetails: {
-    plateNumber: { type: String, required: true },
+    plateNumber: { type: String, required: true, unique: true },
     capacityKg: { type: Number },
     model: { type: String }
   },
@@ -54,7 +54,7 @@ const shipperSchema = new Schema({
   phone: { type: String },
   defaultPickupLocation: locationSchema,
   companyName: { type: String },
-  isVerified: { type: Boolean, default: false }
+  isVerified: { type: Boolean, default: true }
 }, { timestamps: true })
 
 

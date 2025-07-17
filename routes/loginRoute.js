@@ -6,6 +6,7 @@ const {auth, authorizeRoles} = require('../middleware/auth')
 // user routes
 router.post('/register',loginController.registerUser)
 router.post('/login',loginController.loginUser)
+router.get('/user',auth, loginController.getAllUsers)
 
 //driver routes
 router.post('/driver/register',auth, authorizeRoles('admin'), driverController.registerDriver)

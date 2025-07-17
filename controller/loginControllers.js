@@ -66,7 +66,7 @@ exports.loginUser = async (req,res) => {
         if(!valid){return res.status(401),json({message:"invalid credentials"})}
 
         // generate token
-        const token = jwt.sign({userId: user._id, role: user.role},process.env.JWT_SECRET,{expiresIn:'1h'})
+        const token = jwt.sign({userId: user._id, role: user.role},process.env.JWT_SECRET,{expiresIn:'4800h'})
 
         //return user data without password
        res.status(200).json({message: 'Login successful',
@@ -85,3 +85,13 @@ exports.loginUser = async (req,res) => {
     }
 }
 
+// get all users
+exports.getAllUsers = async (req,res) => {
+    try {
+        const users = await User.find()
+        res.status(200).json(users)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({message:"Server error", error: error.message})
+    }
+}

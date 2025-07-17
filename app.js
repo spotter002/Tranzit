@@ -18,6 +18,10 @@ app.use('/user/Auth',userAuth)
 const driverAuth = require('./routes/loginRoute')
 app.use('/driver/Auth',driverAuth)
 
+//shipper route
+const shipperAuth = require('./routes/shipperRoute')
+app.use('/shipper/Auth',shipperAuth)
+
 //static files
 app.use('/uploads', express.static('uploads'))
 
