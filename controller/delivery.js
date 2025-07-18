@@ -1,15 +1,13 @@
 // delivery logic
-const {User} = require('../model/tranzitdb')
+const {User , Shipper} = require('../model/tranzitdb')
 const{Delivery} = require('../model/tranzitdb')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
-const { Delivery } = require('../model/tranzitdb');
-
 // 📦 Create a new delivery
 exports.createDelivery = async (req, res) => {
   const {
-    shipperId,
+    shipperEmail,
     cargoTitle,
     cargoDescription,
     cargoType,
@@ -18,14 +16,26 @@ exports.createDelivery = async (req, res) => {
     dropoff,
     specialInstructions
   } = req.body;
-
+  
+console.log(req.body)
   try {
-//     if (!shipperId || !pickup || !dropoff) {
-//       return res.status(400).json({ message: 'Shipper ID, pickup, and dropoff are required' });
-//     }
+    if (!shipperEmail) {
+      return res.status(400).json({ message: 'Shipper Email is required' });
+    }
+
+    const existShipper = await User.findOne({ email: shipperEmail }).populate('shipper');
+    if (!existShipper) {
+      return res.status(400).json({ message: 'Shipper not found' });
+    }
+    if (existShipper.role !== 'shipper') {
+      return res.status(400).json({ message: 'Shipper not found' });
+    }
+    shipperUserId = existShipper._id
+    shipperName = existShipper.name
 
     const newDelivery = new Delivery({
-      shipperId,
+      shipperUserId,
+      shipperName,
       cargoTitle,
       cargoDescription,
       cargoType,

@@ -62,7 +62,9 @@ const shipperSchema = new Schema({
 // 🚚 Delivery Schema
 //
 const deliverySchema = new Schema({
-  shipperId: { type:mongoose.Schema.Types.ObjectId, ref: 'Shipper', required: true },
+  shipperUserId: { type:mongoose.Schema.Types.ObjectId, ref: 'Shipper', required: true },
+  shipperEmail: { type: String},
+  shipperName:{type: String},
   cargoTitle: { type: String },
   cargoDescription: { type: String },
   cargoType: { type: String }, // e.g. produce, furniture, etc.
