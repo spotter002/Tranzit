@@ -3,7 +3,7 @@ const { Bid, Driver, Delivery } = require('../model/tranzitdb');
 // 📤 Create a Bid
 exports.createBid = async (req, res) => {
   const { jobId, driverId, amount, estimatedArrivalMinutes } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
 
   try {
     if (!jobId || !driverId || !amount) {
@@ -12,9 +12,11 @@ exports.createBid = async (req, res) => {
 
     // Optional: validate driver & job
     const driverExists = await Driver.findById(driverId);
+    // console.log(driverExists)
     if (!driverExists) return res.status(404).json({ message: 'Driver not found' });
-
+    console.log(jobId)
     const jobExists = await Delivery.findById(jobId);
+    console.log(jobExists)
     if (!jobExists) return res.status(404).json({ message: 'Job/Delivery not found' });
 
     const newBid = new Bid({
@@ -32,18 +34,18 @@ exports.createBid = async (req, res) => {
   }
 };
 
-// 📄 Get all Bids
-exports.getAllBids = async (req, res) => {
-  try {
-    const bids = await Bid.find()
-      .populate('jobId', 'cargoTitle pickup dropoff')
-      .populate('driverId', 'name email phone');
-    res.status(200).json(bids);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
+// // 📄 Get all Bids
+// exports.getAllBids = async (req, res) => {
+//   try {
+//     const bids = await Bid.find()
+//       .populate('jobId', 'cargoTitle pickup dropoff')
+//       .populate('driverId', 'name email phone');
+//     res.status(200).json(bids);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// };
 
 // 📄 Get Bid by ID
 exports.getBidById = async (req, res) => {

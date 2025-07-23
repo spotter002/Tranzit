@@ -20,7 +20,7 @@ const userSchema = new Schema({
   role: { type: String, enum: ['admin', 'shipper', 'driver'], required: true },
   shipper: { type:mongoose.Schema.Types.ObjectId, ref: 'Shipper', default: null },
   driver: { type:mongoose.Schema.Types.ObjectId, ref: 'Driver', default: null },
-  isActive: { type: Boolean, default: false }
+  isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
 //
@@ -120,14 +120,18 @@ const bidSchema = new Schema({
 // 💰 Transaction Schema
 //
 const transactionSchema = new Schema({
-  userId: { type:mongoose.Schema.Types.ObjectId, ref: 'User' },
-  jobId: { type:mongoose.Schema.Types.ObjectId, ref: 'Delivery' },
-  amount: { type: Number },
-  type: { type: String, enum: ['job_fee', 'payout', 'bonus'], required: true },
-  method: { type: String, enum: ['mpesa', 'card', 'wallet'], required: true },
-  status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
-  referenceId: { type: String }
-}, { timestamps: true });
+  shipper: { type: Schema.Types.ObjectId, ref: 'User' },
+  driver: { type: Schema.Types.ObjectId, ref: 'Driver' },
+  amount: Number, // original bid
+  driverShare: Number, // what driver receives (after cut)
+  platformShare: Number, // total cut (from both sides)
+  totalPaid: Number, // what shipper paid (bid + shipper cut)
+  phone: String,
+  status: { type: String, enum: ['pending', 'success', 'failed'], default: 'pending' },
+  mpesaResponse: Object,
+  createdAt: { type: Date, default: Date.now }
+});
+
 
 
 //

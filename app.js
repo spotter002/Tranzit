@@ -26,6 +26,26 @@ app.use('/shipper/Auth',shipperAuth)
 const deliveryAuth = require('./routes/deliveryRoute')
 app.use('/delivery/Auth',deliveryAuth)
 
+//bid route
+const bidAuth = require('./routes/bidRoute')
+app.use('/bid/Auth',bidAuth)
+
+//featured route
+const featuredAuth = require('./routes/featuredRoute')
+app.use('/featured/Auth',featuredAuth)
+
+//transaction route
+const transactionAuth = require('./routes/transactionRoute')
+app.use('/transaction/Auth',transactionAuth)
+
+//rating route
+const ratingAuth = require('./routes/ratingRoute')
+app.use('/rating/Auth',ratingAuth)
+
+//mpesaroutes
+const mpesaAuth = require('./routes/mpesa')
+app.use('/mpesa/Auth',mpesaAuth)
+
 //static files
 app.use('/uploads', express.static('uploads'))
 

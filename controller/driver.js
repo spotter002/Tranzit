@@ -1,4 +1,4 @@
-const { User, Driver } = require('../model/tranzitdb');
+const { User, Driver, Bid, Delivery, Rating } = require('../model/tranzitdb');
 const bcrypt = require('bcrypt');
 
 // Register Driver
@@ -161,15 +161,15 @@ exports.updateDriver = async (req, res) => {
         }
 
         if (password) {
-            if (!isSelf) {
-                return res.status(403).json({ message: 'Admins cannot update other users\' passwords.' });
-            }
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-            if (!passwordRegex.test(password)) {
-                return res.status(400).json({
-                    message: 'Password must be at least 8 characters and include uppercase, lowercase, and a number.'
-                });
-            }
+            // if (!isSelf) {
+            //     return res.status(403).json({ message: 'Admins cannot update other users\' passwords.' });
+            // }
+            // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            // if (!passwordRegex.test(password)) {
+            //     return res.status(400).json({
+            //         message: 'Password must be at least 8 characters and include uppercase, lowercase, and a number.'
+            //     });
+            // }
             const salt = await bcrypt.genSalt(10);
             linkedUser.password = await bcrypt.hash(password, salt);
         }
@@ -198,3 +198,40 @@ exports.deleteDriver = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
+// get all drivers bids 
+exports.getDriverBids = async (req, res) => {
+    try {
+        const bids = await Bid.find({ driverId: req.params.id })
+            .populate('jobId', 'cargoTitle pickup dropoff')
+            .populate('driverId', 'name email phone');
+        res.status(200).json(bids);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// get all driver ratings
+exports.getDriverRatings = async (req, res) => {
+    try {
+         const driverId = req.user.userId
+        // Get the driver's nested driver._id
+        const driverUser = await User.findById(driverId).populate('driver');
+        const driverObjId = driverUser.driver._id;
+        const driver = await User.findById(driverId).populate('driver');
+        console.log(driver)
+        console.log(driver.driver._id)
+        const ratings = await Rating.find({driverId: driver.driver._id})
+            .populate('jobId', 'cargoTitle pickup dropoff')
+            .populate('shipperId')
+            .populate('driverId', 'name email');
+            console.log(ratings)
+        res.status(200).json(ratings);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+

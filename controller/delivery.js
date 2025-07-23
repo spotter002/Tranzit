@@ -23,13 +23,14 @@ console.log(req.body)
       return res.status(400).json({ message: 'Shipper Email is required' });
     }
 
-    const existShipper = await User.findOne({ email: shipperEmail }).populate('shipper');
+    const existShipper = await Shipper.findOne({ email: shipperEmail })//.populate('shipper');
+    console.log("THE existshipper",existShipper)
     if (!existShipper) {
       return res.status(400).json({ message: 'Shipper not found' });
     }
-    if (existShipper.role !== 'shipper') {
-      return res.status(400).json({ message: 'Shipper not found' });
-    }
+    // if (existShipper.role !== 'shipper') {
+    //   return res.status(400).json({ message: 'Shipper not found' });
+    // }
     shipperUserId = existShipper._id
     shipperName = existShipper.name
 
@@ -58,7 +59,7 @@ console.log(req.body)
 exports.getAllDeliveries = async (req, res) => {
   try {
     const deliveries = await Delivery.find()
-    .populate('shipperId','name email phone')
+    .populate('shipperUserId','name email phone')
     res.status(200).json(deliveries);
   } catch (error) {
     console.error(error);
@@ -70,7 +71,7 @@ exports.getAllDeliveries = async (req, res) => {
 exports.getDeliveryById = async (req, res) => {
   try {
     const delivery = await Delivery.findById(req.params.id)
-    .populate('shipperId','name email phone')
+    .populate('shipperUserId','name email phone')
     if (!delivery) return res.status(404).json({ message: 'Delivery not found' });
     res.status(200).json(delivery);
   } catch (error) {
