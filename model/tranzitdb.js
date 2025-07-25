@@ -16,8 +16,9 @@ const locationSchema = new mongoose.Schema({
 const userSchema = new Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, lowercase: true, trim: true },
+  phone: { type: String, trim: true ,required: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'shipper', 'driver'], required: true },
+  role: { type: String, enum: ['super-admin','admin', 'shipper', 'driver'], required: true },
   shipper: { type:mongoose.Schema.Types.ObjectId, ref: 'Shipper', default: null },
   driver: { type:mongoose.Schema.Types.ObjectId, ref: 'Driver', default: null },
   isActive: { type: Boolean, default: true }
@@ -56,6 +57,28 @@ const shipperSchema = new Schema({
   companyName: { type: String },
   isVerified: { type: Boolean, default: true }
 }, { timestamps: true })
+
+//wallet schema 
+const walletSchema = new mongoose.Schema({
+  ownerId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Link to User or Driver
+  ownerType: { type: String, enum: ['super-admin', 'shipper', 'driver'], required: true },
+  name: { type: String, required: true },
+  phone: { type: String, required: true, unique: true },
+  balance: { type: Number, default: 0 }
+}, { timestamps: true });
+
+//chat schema
+
+const chatSchema = new mongoose.Schema({
+  deliveryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Delivery', required: true },
+  sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  message: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+});
+
+
+
 
 
 //
@@ -119,18 +142,16 @@ const bidSchema = new Schema({
 //
 // 💰 Transaction Schema
 //
-const transactionSchema = new Schema({
-  shipper: { type: Schema.Types.ObjectId, ref: 'User' },
-  driver: { type: Schema.Types.ObjectId, ref: 'Driver' },
-  amount: Number, // original bid
-  driverShare: Number, // what driver receives (after cut)
-  platformShare: Number, // total cut (from both sides)
-  totalPaid: Number, // what shipper paid (bid + shipper cut)
-  phone: String,
-  status: { type: String, enum: ['pending', 'success', 'failed'], default: 'pending' },
-  mpesaResponse: Object,
-  createdAt: { type: Date, default: Date.now }
-});
+const transactionSchema = new mongoose.Schema({
+  fromWallet: { type: mongoose.Schema.Types.ObjectId, ref: 'Wallet' },
+  toWallet: { type: mongoose.Schema.Types.ObjectId, ref: 'Wallet' },
+  amount: { type: Number, required: true },
+  adminShare: { type: Number, default: 0 },
+  platformShare: { type: Number, default: 0 },
+  driverShare: { type: Number, default: 0 },
+  type: { type: String, enum: ['deposit', 'escrow', 'payout', 'withdrawal'], required: true },
+  status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' }
+}, { timestamps: true });
 
 
 
@@ -145,5 +166,8 @@ module.exports = {
   Bid: mongoose.model('Bid', bidSchema),
   Rating: mongoose.model('Rating', ratingSchema),
   Transaction: mongoose.model('Transaction', transactionSchema),
+  Wallet: mongoose.model('Wallet', walletSchema),
+  Chat: mongoose.model('Chat', chatSchema),
   Featured: mongoose.model('Featured', featuredSchema)
 };
+ 

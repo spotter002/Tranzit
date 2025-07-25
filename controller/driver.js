@@ -217,21 +217,21 @@ exports.getDriverRatings = async (req, res) => {
     try {
          const driverId = req.user.userId
         // Get the driver's nested driver._id
-        const driverUser = await User.findById(driverId).populate('driver');
-        const driverObjId = driverUser.driver._id;
         const driver = await User.findById(driverId).populate('driver');
+
         console.log(driver)
         console.log(driver.driver._id)
         const ratings = await Rating.find({driverId: driver.driver._id})
             .populate('jobId', 'cargoTitle pickup dropoff')
             .populate('shipperId')
             .populate('driverId', 'name email');
-            console.log(ratings)
-        res.status(200).json(ratings);
+            const averageRating = (ratings.reduce((total, rating) => total + rating.stars, 0) / ratings.length).toFixed(2);
+        res.status(200).json({ratings,message:'Your Overall Rating:',averageRating});
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
 
 

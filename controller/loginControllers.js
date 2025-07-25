@@ -95,3 +95,15 @@ exports.getAllUsers = async (req,res) => {
         res.status(500).json({message:"Server error", error: error.message})
     }
 }
+
+//update user
+exports.updateUser = async (req,res) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {new: true})
+        if(!updatedUser){return res.status(404).json({message:"User not found"})}
+        res.status(200).json(updatedUser)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({message:"Server error", error: error.message})
+    }
+}

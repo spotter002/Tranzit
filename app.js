@@ -42,9 +42,13 @@ app.use('/transaction/Auth',transactionAuth)
 const ratingAuth = require('./routes/ratingRoute')
 app.use('/rating/Auth',ratingAuth)
 
-//mpesaroutes
-const mpesaAuth = require('./routes/mpesa')
-app.use('/mpesa/Auth',mpesaAuth)
+//dashboard route
+const dashboardAuth = require('./routes/dashboardRoutes')
+app.use('/dashboard/Auth',dashboardAuth)
+
+// //mpesaroutes
+// const mpesaAuth = require('./routes/mpesa')
+// app.use('/mpesa/Auth',mpesaAuth)
 
 //static files
 app.use('/uploads', express.static('uploads'))
