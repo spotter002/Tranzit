@@ -16,7 +16,7 @@ const locationSchema = new mongoose.Schema({
 const userSchema = new Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, lowercase: true, trim: true },
-  phone: { type: String, trim: true ,required: true },
+  phone: { type: String, trim: true},
   password: { type: String, required: true },
   role: { type: String, enum: ['super-admin','admin', 'shipper', 'driver'], required: true },
   shipper: { type:mongoose.Schema.Types.ObjectId, ref: 'Shipper', default: null },

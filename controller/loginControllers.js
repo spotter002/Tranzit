@@ -4,10 +4,10 @@ const jwt = require('jsonwebtoken')
 
 // register a new user
 exports.registerUser = async (req, res) => {
-    const { name, email, password, secretKey } = req.body;
+    const { name, email, password, secretKey , phone } = req.body;
     try {
 
-        if (!name || !email || !secretKey || !password) {
+        if (!name || !email || !secretKey || !password || !phone) {
             return res.status(400).json({ message: 'All fields are required' });
         }
         // Check if secret key matches
@@ -31,6 +31,7 @@ exports.registerUser = async (req, res) => {
         // Create new user
         const newUser = new User({
             name,
+            phone,
             email,
             password: hashedPassword,
             role: 'admin', // Default role, can be changed later
