@@ -31,8 +31,8 @@ console.log(req.body)
     // if (existShipper.role !== 'shipper') {
     //   return res.status(400).json({ message: 'Shipper not found' });
     // }
-    shipperUserId = existShipper._id
-    shipperName = existShipper.name
+     const shipperUserId = existShipper._id
+     const shipperName = existShipper.name
 
     const newDelivery = new Delivery({
       shipperUserId,
