@@ -8,22 +8,22 @@ exports.registerUser = async (req, res) => {
     try {
 
         if (!name || !email || !secretKey || !password || !phone) {
-            return res.json({ message: 'All fields are required' });
+            return res.status(400).json({ message: 'All fields are required' });
         }
         // Check if secret key matches
         if (secretKey !== process.env.secretKey) {
-            return res.json({ message: 'Unauthorezed Account Creation' })
+            return res.status(403).json({ message: 'Unauthorezed Account Creation' })
         }
 
         // Check if user already exists
         const existingUser = await User.findOne({ email })
         if (existingUser) {
-            return res.json({ message: 'User already exists' })
+            return res.status(400).json({ message: 'User already exists' })
         }
 
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/; // At least 8 characters
         if (!passwordRegex.test(password)) {
-            return res.json({ message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.' });
+            return res.status(400).json({ message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.' });
         }
         
         // Hash the password
@@ -40,12 +40,12 @@ exports.registerUser = async (req, res) => {
         // Save user to database
         await newUser.save()
         
-        res.json({
+        res.status(201).json({
             message: 'User registered successfully',
             newUser})
     } catch (error) {
         console.error('Error registering user:', error);
-        res.json({ message: 'Internal server error' })
+        res.status(500).json({ message: 'Internal server error' })
     }
     
 }
@@ -56,21 +56,21 @@ exports.loginUser = async (req,res) => {
     try {
 
         if (!email || !password) {
-            return res.json({ message: 'Email and password are required' });
+            return res.status(400).json({ message: 'Email and password are required' });
         }
         // find user by email
         const user = await User.findOne({email})
-        if(!user){return res.json({message:"invalid credentials"})}
-        // if(!user.isActive){return res.json({message:'Account Deactivated'})}
+        if(!user){return res.status(404).json({message:"invalid credentials"})}
+        // if(!user.isActive){return res.status(403).json({message:'Account Deactivated'})}
         // check if password is correct
         const valid = await bcrypt.compare(password, user.password)
-        if(!valid){return res.json({message:"invalid credentials"})}
+        if(!valid){return res.status(401).json({message:"invalid credentials"})}
 
         // generate token
         const token = jwt.sign({userId: user._id, role: user.role},process.env.JWT_SECRET,{expiresIn:'4800h'})
 
         //return user data without password
-       res.json({message: 'Login successful',
+       res.status(200).json({message: 'Login successful',
             user: {
                 _id: user._id,
                 name: user.name,
@@ -82,7 +82,7 @@ exports.loginUser = async (req,res) => {
         })
     } catch (error) {
         console.error('Error logging in',error)
-        res.json({message:'Internal Server Error'})
+        res.status(500).json({message:'Internal Server Error'})
     }
 }
 
@@ -90,10 +90,10 @@ exports.loginUser = async (req,res) => {
 exports.getAllUsers = async (req,res) => {
     try {
         const users = await User.find()
-        res.json(users)
+        res.status(200).json(users)
     } catch (error) {
         console.error(error)
-        res.json({message:"Server error", error: error.message})
+        res.status(500).json({message:"Server error", error: error.message})
     }
 }
 
@@ -101,10 +101,10 @@ exports.getAllUsers = async (req,res) => {
 exports.updateUser = async (req,res) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {new: true})
-        if(!updatedUser){return res.json({message:"User not found"})}
-        res.json(updatedUser)
+        if(!updatedUser){return res.status(404).json({message:"User not found"})}
+        res.status(200).json(updatedUser)
     } catch (error) {
         console.error(error)
-        res.json({message:"Server error", error: error.message})
+        res.status(500).json({message:"Server error", error: error.message})
     }
 }
