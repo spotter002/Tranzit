@@ -32,7 +32,7 @@ exports.getAdminDashboard = async (req, res) => {
             .limit(5);
 
         // return all the data
-        res.status(200).json({
+        res.json({
             adminEarnings: wallet?.balance || 0,
             totalUsers,
             totalDrivers,
@@ -44,6 +44,6 @@ exports.getAdminDashboard = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching admin dashboard', error: error.message });
+        res.json({ message: 'Error fetching admin dashboard', error: error.message });
     }
 };

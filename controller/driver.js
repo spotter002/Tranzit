@@ -8,7 +8,7 @@ exports.registerDriver = async (req, res) => {
         const plate= vehicleDetails.plateNumber;
 
         if (!name || !email || !password || !phone || !vehicleType || !vehicleDetails || !licenseNumber || !idNumber) {
-            return res.status(400).json({ message: 'All fields are required' });
+            return res.json({ message: 'All fields are required' });
         }
 
         const emailExistsInUser = await User.findOne({ email });
@@ -16,19 +16,19 @@ exports.registerDriver = async (req, res) => {
         const emailExistsInDriver = await Driver.findOne({ email });
         console.log(emailExistsInDriver);
         if (emailExistsInUser || emailExistsInDriver) {
-            return res.status(400).json({ message: 'Driver already exists' });
+            return res.json({ message: 'Driver already exists' });
         }
         // Check if vehicle plate number already exists
         const existingCar = await Driver.findOne({ 'vehicleDetails.plateNumber': plate });
 
         if (existingCar) {
-            return res.status(400).json({ message: 'Car already exists' });
+            return res.json({ message: 'Car already exists' });
         }
 
 
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
         if (!passwordRegex.test(password)) {
-            return res.status(400).json({
+            return res.json({
                 message: 'Password must be at least 8 characters long and contain uppercase, lowercase, and a number'
             });
         }
@@ -62,13 +62,13 @@ exports.registerDriver = async (req, res) => {
 
         await newUser.save();
 
-        res.status(201).json({
+        res.json({
             message: 'Driver registered successfully',
             driver: newDriver,
             user: newUser
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -76,9 +76,9 @@ exports.registerDriver = async (req, res) => {
 exports.getDriver = async (req, res) => {
     try {
         const drivers = await Driver.find();
-        res.status(200).json(drivers);
+        res.json(drivers);
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -87,11 +87,11 @@ exports.getDriverById = async (req, res) => {
     try {
         const driver = await Driver.findById(req.params.id);
         if (!driver) {
-            return res.status(404).json({ message: 'Driver not found' });
+            return res.json({ message: 'Driver not found' });
         }
-        res.status(200).json(driver);
+        res.json(driver);
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -105,19 +105,19 @@ exports.updateDriver = async (req, res) => {
         if (role === 'driver') {
             const linkedUser = await User.findById(userId);
             if (!linkedUser || !linkedUser.driver) {
-                return res.status(404).json({ message: 'Linked driver not found' });
+                return res.json({ message: 'Linked driver not found' });
             }
             targetDriverId = linkedUser.driver;
         }
 
         const driver = await Driver.findById(targetDriverId);
         if (!driver) {
-            return res.status(404).json({ message: 'Driver not found' });
+            return res.json({ message: 'Driver not found' });
         }
 
         const linkedUser = await User.findOne({ driver: targetDriverId });
         if (!linkedUser) {
-            return res.status(404).json({ message: 'Linked user not found' });
+            return res.json({ message: 'Linked user not found' });
         }
 
         const isAdmin = role === 'admin';
@@ -155,18 +155,18 @@ exports.updateDriver = async (req, res) => {
 
         if (userRole) {
             if (!isAdmin) {
-                return res.status(403).json({ message: 'Only admins can update driver roles.' });
+                return res.json({ message: 'Only admins can update driver roles.' });
             }
             linkedUser.role = userRole;
         }
 
         if (password) {
             // if (!isSelf) {
-            //     return res.status(403).json({ message: 'Admins cannot update other users\' passwords.' });
+            //     return res.json({ message: 'Admins cannot update other users\' passwords.' });
             // }
             // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
             // if (!passwordRegex.test(password)) {
-            //     return res.status(400).json({
+            //     return res.json({
             //         message: 'Password must be at least 8 characters and include uppercase, lowercase, and a number.'
             //     });
             // }
@@ -177,9 +177,9 @@ exports.updateDriver = async (req, res) => {
         await driver.save();
         await linkedUser.save();
 
-        res.status(200).json({ message: 'Driver updated successfully', driver, user: linkedUser });
+        res.json({ message: 'Driver updated successfully', driver, user: linkedUser });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -188,14 +188,14 @@ exports.deleteDriver = async (req, res) => {
     try {
         const driver = await Driver.findByIdAndDelete(req.params.id);
         if (!driver) {
-            return res.status(404).json({ message: 'Driver not found' });
+            return res.json({ message: 'Driver not found' });
         }
 
         await User.findOneAndDelete({ driver: req.params.id });
 
-        res.status(200).json({ message: 'Driver and user deleted successfully' });
+        res.json({ message: 'Driver and user deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -205,10 +205,10 @@ exports.getDriverBids = async (req, res) => {
         const bids = await Bid.find({ driverId: req.params.id })
             .populate('jobId', 'cargoTitle pickup dropoff')
             .populate('driverId', 'name email phone');
-        res.status(200).json(bids);
+        res.json(bids);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -226,10 +226,10 @@ exports.getDriverRatings = async (req, res) => {
             .populate('shipperId')
             .populate('driverId', 'name email');
             const averageRating = (ratings.reduce((total, rating) => total + rating.stars, 0) / ratings.length).toFixed(2);
-        res.status(200).json({ratings,message:'Your Overall Rating:',averageRating});
+        res.json({ratings,message:'Your Overall Rating:',averageRating});
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.json({ message: 'Server error', error: error.message });
     }
 };
 

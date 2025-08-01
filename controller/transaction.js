@@ -7,7 +7,7 @@ exports.createWallet = async (req, res) => {
     const user = await User.findById(ownerId).populate(['shipper', 'driver']); // Populate related models if needed
     console.log(user)
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.json({ message: 'User not found' });
     }
 
     let phone;
@@ -27,13 +27,13 @@ exports.createWallet = async (req, res) => {
       name = user.driver?.name || name;
       ownerId = user.driver._id;
     } else {
-      return res.status(400).json({ message: 'Invalid user role' });
+      return res.json({ message: 'Invalid user role' });
     }
 
     // Check if wallet already exists
     const existingWallet = await Wallet.findOne({ phone });
     if (existingWallet) {
-      return res.status(400).json({ message: 'Wallet already exists' });
+      return res.json({ message: 'Wallet already exists' });
     }
 
     // Create new wallet
@@ -44,9 +44,9 @@ exports.createWallet = async (req, res) => {
       ownerId
     });
 
-    res.status(201).json({ message: 'Wallet created successfully', wallet });
+    res.json({ message: 'Wallet created successfully', wallet });
   } catch (err) {
-    res.status(500).json({ message: 'Error creating wallet', error: err.message });
+    res.json({ message: 'Error creating wallet', error: err.message });
   }
 };
 
@@ -54,9 +54,9 @@ exports.createWallet = async (req, res) => {
 exports.getAllWallets = async (req, res) => {
   try {
     const wallets = await Wallet.find();
-    res.status(200).json(wallets);
+    res.json(wallets);
   } catch (err) {
-    res.status(500).json({ message: 'Error getting wallets', error: err.message });
+    res.json({ message: 'Error getting wallets', error: err.message });
   }
 }
 
@@ -65,10 +65,10 @@ exports.getWallet = async (req, res) => {
   try {
     const walletId = req.user.userId
     const wallet = await Wallet.findOne({ownerId: walletId});
-    if (!wallet) return res.status(404).json({ message: 'Wallet not found' });
-    return res.status(200).json(wallet);
+    if (!wallet) return res.json({ message: 'Wallet not found' });
+    return res.json(wallet);
   } catch (err) {
-    res.status(500).json({ message: 'Error getting wallet', error: err.message });
+    res.json({ message: 'Error getting wallet', error: err.message });
   }
 };
 
@@ -79,14 +79,14 @@ exports.depositFunds = async (req, res) => {
     console.log("Shipper Id",shipperId)
     const{amount} = req.body
     if (!shipperId || !amount) {
-      return res.status(400).json({ message: 'Login to deposit funds' });
+      return res.json({ message: 'Login to deposit funds' });
     }
 
     const shipper = await User.findById({_id: shipperId}).populate('shipper');
-    if (!shipper) return res.status(404).json({ message: 'Shipper not found' });
+    if (!shipper) return res.json({ message: 'Shipper not found' });
     console.log("Our Shipper =",shipper)
     const wallet = await Wallet.findOne({ phone: shipper.shipper.phone });
-    if (!wallet) return res.status(404).json({ message: 'Wallet not found' });
+    if (!wallet) return res.json({ message: 'Wallet not found' });
 
     wallet.balance += amount;
     await wallet.save();
@@ -99,9 +99,9 @@ exports.depositFunds = async (req, res) => {
     });
     await transaction.save();
 
-    return res.status(200).json({ message: 'Deposit successful', wallet });
+    return res.json({ message: 'Deposit successful', wallet });
   } catch (err) {
-    res.status(500).json({ message: 'Error depositing funds', error: err.message });
+    res.json({ message: 'Error depositing funds', error: err.message });
   }
 };
 
@@ -112,14 +112,14 @@ exports.withdrawFunds = async (req, res) => {
     console.log("Shipper Id",shipperId)
     const{amount} = req.body
     if (!shipperId || !amount) {
-      return res.status(400).json({ message: 'Login to deposit funds' });
+      return res.json({ message: 'Login to deposit funds' });
     }
 
     const shipper = await User.findById({_id: shipperId}).populate('shipper');
-    if (!shipper) return res.status(404).json({ message: 'Shipper not found' });
+    if (!shipper) return res.json({ message: 'Shipper not found' });
     console.log("Our Shipper =",shipper)
     const wallet = await Wallet.findOne({ phone: shipper.shipper.phone });
-    if (!wallet) return res.status(404).json({ message: 'Wallet not found' });
+    if (!wallet) return res.json({ message: 'Wallet not found' });
 
     wallet.balance -= amount;
     await wallet.save();
@@ -132,9 +132,9 @@ exports.withdrawFunds = async (req, res) => {
     });
     await transaction.save();
 
-    return res.status(200).json({ message: 'withdraw successful', wallet });
+    return res.json({ message: 'withdraw successful', wallet });
   } catch (err) {
-    res.status(500).json({ message: 'Error depositing funds', error: err.message });
+    res.json({ message: 'Error depositing funds', error: err.message });
   }
 };
 
@@ -151,19 +151,19 @@ exports.payDriver = async (req, res) => {
     const driverPhone = driver.phone
    
     if (!shipperPhone) {
-      return res.status(400).json({ message: 'login to transfer funds' });
+      return res.json({ message: 'login to transfer funds' });
     }
     if( !driverPhone || !amount){
-      return res.status(400).json({ message: ' driver id, and amount are required' });
+      return res.json({ message: ' driver id, and amount are required' });
     }
 
     const shipperWallet = await Wallet.findOne({ phone: shipperPhone });
     const driverWallet = await Wallet.findOne({ phone: driverPhone });
-    if (!shipperWallet) return res.status(404).json({ message: 'Shipper wallet not found' });
-    if (!driverWallet) return res.status(404).json({ message: 'Driver wallet not found' });
+    if (!shipperWallet) return res.json({ message: 'Shipper wallet not found' });
+    if (!driverWallet) return res.json({ message: 'Driver wallet not found' });
 
     // Check balance
-    if (shipperWallet.balance < amount) return res.status(400).json({ message: 'Insufficient funds in shipper wallet' });
+    if (shipperWallet.balance < amount) return res.json({ message: 'Insufficient funds in shipper wallet' });
 
     // Deduct from shipper
     shipperWallet.balance -= amount;
@@ -196,13 +196,13 @@ exports.payDriver = async (req, res) => {
 
     await transaction.save();
 
-    return res.status(200).json({
+    return res.json({
       message: `Payment of ${amount} successful. Driver received ${driverShare}, Platform kept ${platformShare}.`,
       shipperWallet,
       driverWallet
     });
   } catch (err) {
-    res.status(500).json({ message: 'Error processing payment', error: err.message });
+    res.json({ message: 'Error processing payment', error: err.message });
   }
 };
 
@@ -210,10 +210,10 @@ exports.payDriver = async (req, res) => {
 exports.deleteWallet = async (req, res) => {
   try {
     const wallet = await Wallet.findByIdAndDelete(req.params.id);
-    if (!wallet) return res.status(404).json({ message: 'Wallet not found' });
-    return res.status(200).json({ message: 'Wallet deleted successfully' });
+    if (!wallet) return res.json({ message: 'Wallet not found' });
+    return res.json({ message: 'Wallet deleted successfully' });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting wallet', error: err.message });
+    res.json({ message: 'Error deleting wallet', error: err.message });
   }
 };
 

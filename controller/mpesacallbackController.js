@@ -16,7 +16,7 @@ exports.handleStkCallback = async (req, res) => {
     const transaction = await Transaction.findOne({ checkoutRequestID });
 
     if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
+      return res.json({ message: 'Transaction not found' });
     }
 
     if (resultCode === 0) {
@@ -32,10 +32,10 @@ exports.handleStkCallback = async (req, res) => {
 
     await transaction.save();
 
-    res.status(200).json({ message: 'Callback processed' });
+    res.json({ message: 'Callback processed' });
 
   } catch (err) {
     console.error('Callback Error:', err.message);
-    res.status(500).json({ message: 'Callback server error', error: err.message });
+    res.json({ message: 'Callback server error', error: err.message });
   }
 };

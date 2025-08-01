@@ -7,13 +7,13 @@ exports.createFeaturedDriver = async (req, res) => {
 
   try {
     if (!driverId || !startDate || !endDate) {
-      return res.status(400).json({ message: 'Required fields are missing' });
+      return res.json({ message: 'Required fields are missing' });
     }
 
     // Optional: validate driver exists
     const driverExists = await Driver.findById(driverId);
     if (!driverExists) {
-      return res.status(404).json({ message: 'Driver not found' });
+      return res.json({ message: 'Driver not found' });
     }
 
     const newFeatured = new Featured({
@@ -24,10 +24,10 @@ exports.createFeaturedDriver = async (req, res) => {
     });
 
     await newFeatured.save();
-    res.status(201).json({ message: 'Featured driver created', featured: newFeatured });
+    res.json({ message: 'Featured driver created', featured: newFeatured });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -37,10 +37,10 @@ exports.getAllFeaturedDrivers = async (req, res) => {
     const featuredDrivers = await Featured.find()
       .populate('driverId', 'name email phone licenseNumber');
 
-    res.status(200).json(featuredDrivers);
+    res.json(featuredDrivers);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -50,12 +50,12 @@ exports.getFeaturedDriverById = async (req, res) => {
     const featured = await Featured.findById(req.params.id)
       .populate('driverId', 'name email phone');
 
-    if (!featured) return res.status(404).json({ message: 'Featured driver not found' });
+    if (!featured) return res.json({ message: 'Featured driver not found' });
 
-    res.status(200).json(featured);
+    res.json(featured);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -68,12 +68,12 @@ exports.updateFeaturedDriver = async (req, res) => {
       { new: true }
     );
 
-    if (!updatedFeatured) return res.status(404).json({ message: 'Featured driver not found' });
+    if (!updatedFeatured) return res.json({ message: 'Featured driver not found' });
 
-    res.status(200).json({ message: 'Featured driver updated', updatedFeatured });
+    res.json({ message: 'Featured driver updated', updatedFeatured });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -81,11 +81,11 @@ exports.updateFeaturedDriver = async (req, res) => {
 exports.deleteFeaturedDriver = async (req, res) => {
   try {
     const deletedFeatured = await Featured.findByIdAndDelete(req.params.id);
-    if (!deletedFeatured) return res.status(404).json({ message: 'Featured driver not found' });
+    if (!deletedFeatured) return res.json({ message: 'Featured driver not found' });
 
-    res.status(200).json({ message: 'Featured driver removed successfully' });
+    res.json({ message: 'Featured driver removed successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };

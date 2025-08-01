@@ -20,16 +20,16 @@ exports.createDelivery = async (req, res) => {
 console.log(req.body)
   try {
     if (!shipperEmail) {
-      return res.status(400).json({ message: 'Shipper Email is required' });
+      return res.json({ message: 'Shipper Email is required' });
     }
 
     const existShipper = await Shipper.findOne({ email: shipperEmail })//.populate('shipper');
     console.log("THE existshipper",existShipper)
     if (!existShipper) {
-      return res.status(400).json({ message: 'Shipper not found' });
+      return res.json({ message: 'Shipper not found' });
     }
     // if (existShipper.role !== 'shipper') {
-    //   return res.status(400).json({ message: 'Shipper not found' });
+    //   return res.json({ message: 'Shipper not found' });
     // }
      const shipperUserId = existShipper._id
      const shipperName = existShipper.name
@@ -47,11 +47,11 @@ console.log(req.body)
     });
 
     await newDelivery.save();
-    res.status(201).json({ message: 'Delivery created successfully', delivery: newDelivery });
+    res.json({ message: 'Delivery created successfully', delivery: newDelivery });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -60,10 +60,10 @@ exports.getAllDeliveries = async (req, res) => {
   try {
     const deliveries = await Delivery.find()
     .populate('shipperUserId','name email phone')
-    res.status(200).json(deliveries);
+    res.json(deliveries);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -72,11 +72,11 @@ exports.getDeliveryById = async (req, res) => {
   try {
     const delivery = await Delivery.findById(req.params.id)
     .populate('shipperUserId','name email phone')
-    if (!delivery) return res.status(404).json({ message: 'Delivery not found' });
-    res.status(200).json(delivery);
+    if (!delivery) return res.json({ message: 'Delivery not found' });
+    res.json(delivery);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -84,11 +84,11 @@ exports.getDeliveryById = async (req, res) => {
 exports.updateDelivery = async (req, res) => {
   try {
     const updatedDelivery = await Delivery.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedDelivery) return res.status(404).json({ message: 'Delivery not found' });
-    res.status(200).json(updatedDelivery);
+    if (!updatedDelivery) return res.json({ message: 'Delivery not found' });
+    res.json(updatedDelivery);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -96,10 +96,10 @@ exports.updateDelivery = async (req, res) => {
 exports.deleteDelivery = async (req, res) => {
   try {
     const deletedDelivery = await Delivery.findByIdAndDelete(req.params.id);
-    if (!deletedDelivery) return res.status(404).json({ message: 'Delivery not found' });
-    res.status(200).json({ message: 'Delivery deleted successfully' });
+    if (!deletedDelivery) return res.json({ message: 'Delivery not found' });
+    res.json({ message: 'Delivery deleted successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };

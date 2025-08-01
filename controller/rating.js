@@ -8,12 +8,12 @@ exports.createRating = async (req, res) => {
   try {
     // Basic validation
     if (!jobId || !driverId || !stars) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      return res.json({ message: 'Missing required fields' });
     }
    const existJob = await Delivery.findById(jobId);
    const existDriver = await Driver.findById(driverId);
    console.log(existJob)
-if (!existJob) return res.status(404).json({ message: 'Job/Delivery not found' });
+if (!existJob) return res.json({ message: 'Job/Delivery not found' });
 
 const shipperId = existJob.shipperUserId;
 const shipperName = existJob.shipperName;
@@ -29,14 +29,14 @@ const driverName = existDriver.name;
     });
 
     await rating.save();
-    res.status(201).json({ message: `${driverName} has been rated ${stars} stars by ${shipperName}`, rating  });
+    res.json({ message: `${driverName} has been rated ${stars} stars by ${shipperName}`, rating  });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 //   const existingRating = await Rating.findOne({ jobId, driverId, shipperId });
 // if (existingRating) {
-//   return res.status(400).json({ message: 'You already rated this job/driver' });
+//   return res.json({ message: 'You already rated this job/driver' });
 // }
 
 };
@@ -48,10 +48,10 @@ exports.getAllRatings = async (req, res) => {
       .populate('jobId', 'cargoTitle pickup dropoff') // Populate job details
       .populate('shipperId', 'name email')
       .populate('driverId', 'name email');
-    res.status(200).json(ratings);
+    res.json(ratings);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -63,12 +63,12 @@ exports.getRatingById = async (req, res) => {
       .populate('shipperId', 'name email')
       .populate('driverId', 'name email');
 
-    if (!rating) return res.status(404).json({ message: 'Rating not found' });
+    if (!rating) return res.json({ message: 'Rating not found' });
 
-    res.status(200).json(rating);
+    res.json(rating);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -76,12 +76,12 @@ exports.getRatingById = async (req, res) => {
 exports.updateRating = async (req, res) => {
   try {
     const updatedRating = await Rating.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedRating) return res.status(404).json({ message: 'Rating not found' });
+    if (!updatedRating) return res.json({ message: 'Rating not found' });
 
-    res.status(200).json({ message: 'Rating updated', updatedRating });
+    res.json({ message: 'Rating updated', updatedRating });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -89,11 +89,11 @@ exports.updateRating = async (req, res) => {
 exports.deleteRating = async (req, res) => {
   try {
     const deletedRating = await Rating.findByIdAndDelete(req.params.id);
-    if (!deletedRating) return res.status(404).json({ message: 'Rating not found' });
+    if (!deletedRating) return res.json({ message: 'Rating not found' });
 
-    res.status(200).json({ message: 'Rating deleted successfully' });
+    res.json({ message: 'Rating deleted successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };

@@ -10,7 +10,7 @@ const auth=(req,res,next)=>{
 
  // check if we have the token 
  if(!token){
-     return res.status(401).json({message: 'Unauthorized access, please login'})
+     return res.json({message: 'Unauthorized access, please login'})
  }
  try {
     // verify the token using the secret key
@@ -21,7 +21,7 @@ const auth=(req,res,next)=>{
         //proceed to the next middleware or route handler
         next()
  } catch (error) {
-     return res.status(500).json({message: 'Internal server error', error: error.message})
+     return res.json({message: 'Internal server error', error: error.message})
     
  }
 }
@@ -33,7 +33,7 @@ const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
         // check if the user role is in the allowed roles
         if (!req.user || !allowedRoles.includes(req.user.role)) {
-            return res.status(403).json({message: 'Access denied: You do not have permission to perform this action'})
+            return res.json({message: 'Access denied: You do not have permission to perform this action'})
         }
         //proceed to the next middleware or route handler
         next()

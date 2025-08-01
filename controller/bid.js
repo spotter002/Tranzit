@@ -7,17 +7,17 @@ exports.createBid = async (req, res) => {
 
   try {
     if (!jobId || !driverId || !amount) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      return res.json({ message: 'Missing required fields' });
     }
 
     // Optional: validate driver & job
     const driverExists = await Driver.findById(driverId);
     // console.log(driverExists)
-    if (!driverExists) return res.status(404).json({ message: 'Driver not found' });
+    if (!driverExists) return res.json({ message: 'Driver not found' });
     console.log(jobId)
     const jobExists = await Delivery.findById(jobId);
     console.log(jobExists)
-    if (!jobExists) return res.status(404).json({ message: 'Job/Delivery not found' });
+    if (!jobExists) return res.json({ message: 'Job/Delivery not found' });
 
     const newBid = new Bid({
       jobId,
@@ -27,10 +27,10 @@ exports.createBid = async (req, res) => {
     });
 
     await newBid.save();
-    res.status(201).json({ message: 'Bid created successfully', bid: newBid });
+    res.json({ message: 'Bid created successfully', bid: newBid });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -40,10 +40,10 @@ exports.createBid = async (req, res) => {
 //     const bids = await Bid.find()
 //       .populate('jobId', 'cargoTitle pickup dropoff')
 //       .populate('driverId', 'name email phone');
-//     res.status(200).json(bids);
+//     res.json(bids);
 //   } catch (error) {
 //     console.error(error);
-//     res.status(500).json({ message: 'Server error', error: error.message });
+//     res.json({ message: 'Server error', error: error.message });
 //   }
 // };
 
@@ -54,12 +54,12 @@ exports.getBidById = async (req, res) => {
       .populate('jobId', 'cargoTitle pickup dropoff')
       .populate('driverId', 'name email');
 
-    if (!bid) return res.status(404).json({ message: 'Bid not found' });
+    if (!bid) return res.json({ message: 'Bid not found' });
 
-    res.status(200).json(bid);
+    res.json(bid);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -72,12 +72,12 @@ exports.updateBid = async (req, res) => {
       { new: true }
     );
 
-    if (!updatedBid) return res.status(404).json({ message: 'Bid not found' });
+    if (!updatedBid) return res.json({ message: 'Bid not found' });
 
-    res.status(200).json({ message: 'Bid updated', updatedBid });
+    res.json({ message: 'Bid updated', updatedBid });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -85,11 +85,11 @@ exports.updateBid = async (req, res) => {
 exports.deleteBid = async (req, res) => {
   try {
     const deletedBid = await Bid.findByIdAndDelete(req.params.id);
-    if (!deletedBid) return res.status(404).json({ message: 'Bid not found' });
+    if (!deletedBid) return res.json({ message: 'Bid not found' });
 
-    res.status(200).json({ message: 'Bid deleted successfully' });
+    res.json({ message: 'Bid deleted successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.json({ message: 'Server error', error: error.message });
   }
 };

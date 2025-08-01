@@ -10,12 +10,12 @@ exports.registerShipper = async (req, res) => {
         const { email } = req.body;
         const existUserEmail = await User.findOne({ email });
         if (existUserEmail) {
-            return res.status(400).json({ message: 'Shipper already exists' });
+            return res.json({ message: 'Shipper already exists' });
         }
 
         const existEmail = await Shipper.findOne({ email });
         if (existEmail) {
-            return res.status(400).json({ message: 'Shipper already exists' });
+            return res.json({ message: 'Shipper already exists' });
         }
 
         const newShipper = new Shipper(req.body);
@@ -33,9 +33,9 @@ exports.registerShipper = async (req, res) => {
         });
 
         await newUser.save();
-        res.status(201).json({ message: 'Shipper registered successfully', shipper: newShipper, user: newUser });
+        res.json({ message: 'Shipper registered successfully', shipper: newShipper, user: newUser });
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error', error: error.message });
+        res.json({ message: 'Internal server error', error: error.message });
     }
 };
 
@@ -43,9 +43,9 @@ exports.registerShipper = async (req, res) => {
 exports.getAllShippers = async (req, res) => {
     try {
         const shippers = await Shipper.find();
-        res.status(200).json(shippers);
+        res.json(shippers);
     } catch (error) {
-        res.status(500).json({ message: 'Error getting shippers', error: error.message });
+        res.json({ message: 'Error getting shippers', error: error.message });
     }
 };
 
@@ -54,11 +54,11 @@ exports.getShipperById = async (req, res) => {
     try {
         const shipper = await Shipper.findById(req.params.id);
         if (!shipper) {
-            return res.status(404).json({ message: 'Shipper not found' });
+            return res.json({ message: 'Shipper not found' });
         }
-        res.status(200).json(shipper);
+        res.json(shipper);
     } catch (error) {
-        res.status(500).json({ message: 'Error getting shipper', error: error.message });
+        res.json({ message: 'Error getting shipper', error: error.message });
     }
 };
 
@@ -72,19 +72,19 @@ exports.updateShipper = async (req, res) => {
         if (role === 'shipper') {
             const linkedUser = await User.findById(userId);
             if (!linkedUser || !linkedUser.shipper) {
-                return res.status(404).json({ message: 'Linked shipper not found' });
+                return res.json({ message: 'Linked shipper not found' });
             }
             targetShipperId = linkedUser.shipper;
         }
 
         const shipper = await Shipper.findById(targetShipperId);
         if (!shipper) {
-            return res.status(404).json({ message: 'Shipper not found' });
+            return res.json({ message: 'Shipper not found' });
         }
 
         const linkedUser = await User.findOne({ shipper: targetShipperId });
         if (!linkedUser) {
-            return res.status(404).json({ message: 'Linked user not found' });
+            return res.json({ message: 'Linked user not found' });
         }
 
         const isAdmin = role === 'admin';
@@ -107,7 +107,7 @@ exports.updateShipper = async (req, res) => {
         }
         if (userRole) {
             if (!isAdmin) {
-                return res.status(403).json({ message: 'Only admins can update shipper roles.' });
+                return res.json({ message: 'Only admins can update shipper roles.' });
             }
             shipper.role = userRole;
             linkedUser.role = userRole;
@@ -115,11 +115,11 @@ exports.updateShipper = async (req, res) => {
 
         if (password) {
             if (!isSelf) {
-                return res.status(403).json({ message: 'Admins cannot update other users\' passwords.' });
+                return res.json({ message: 'Admins cannot update other users\' passwords.' });
             }
             const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
             if (!passwordRegex.test(password)) {
-                return res.status(400).json({
+                return res.json({
                     message: 'Password must be at least 8 characters and include uppercase, lowercase, and a number.'
                 });
             }
@@ -130,9 +130,9 @@ exports.updateShipper = async (req, res) => {
         await shipper.save();
         await linkedUser.save();
 
-        res.status(200).json({ message: 'Shipper updated successfully', shipper, user: linkedUser });
+        res.json({ message: 'Shipper updated successfully', shipper, user: linkedUser });
     } catch (error) {
-        res.status(500).json({ message: 'Error updating shipper', error: error.message });
+        res.json({ message: 'Error updating shipper', error: error.message });
     }
 };
 
@@ -141,11 +141,11 @@ exports.deleteShipper = async (req, res) => {
     try {
         const shipper = await Shipper.findByIdAndDelete(req.params.id);
         if (!shipper) {
-            return res.status(404).json({ message: 'Shipper not found' });
+            return res.json({ message: 'Shipper not found' });
         }
         await User.findOneAndDelete({ shipper: req.params.id });
-        res.status(200).json({ message: 'Shipper and user deleted successfully' });
+        res.json({ message: 'Shipper and user deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting shipper', error: error.message });
+        res.json({ message: 'Error deleting shipper', error: error.message });
     }
 };

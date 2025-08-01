@@ -12,13 +12,13 @@ exports.getDriverDashboard = async (req, res) => {
     const assignedJobs = await Delivery.find({ driverId, status: 'assigned' });
     const completedJobs = await Delivery.countDocuments({ driverId, status: 'completed' });
 
-    res.status(200).json({
+    res.json({
       earnings: wallet?.balance || 0,
       completedJobs,
       assignedJobs
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error fetching driver dashboard', error: error.message });
+    res.json({ message: 'Error fetching driver dashboard', error: error.message });
   }
 };

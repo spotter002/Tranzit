@@ -12,13 +12,13 @@ exports.getShipperDashboard = async (req, res) => {
     const activeJobs = await Delivery.find({ shipperId, status: { $in: ['pending', 'assigned'] } });
     const jobHistory = await Delivery.find({ shipperId, status: 'completed' }).sort({ completedAt: -1 }).limit(10);
 
-    res.status(200).json({
+    res.json({
       walletBalance: wallet?.balance || 0,
       activeJobs,
       jobHistory
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error fetching shipper dashboard', error: error.message });
+    res.json({ message: 'Error fetching shipper dashboard', error: error.message });
   }
 };

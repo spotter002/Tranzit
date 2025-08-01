@@ -8,7 +8,7 @@ exports.handleBidPayment = async (req, res) => {
   const { shipperId, driverId, phone, bidAmount } = req.body;
 
   if (!shipperId || !driverId || !phone || !bidAmount) {
-    return res.status(400).json({ message: 'Missing required fields' });
+    return res.json({ message: 'Missing required fields' });
   }
 
   try {
@@ -18,10 +18,10 @@ exports.handleBidPayment = async (req, res) => {
     ]);
 
     if (!shipper || shipper.role !== 'shipper') {
-      return res.status(404).json({ message: 'Invalid shipper' });
+      return res.json({ message: 'Invalid shipper' });
     }
     if (!driver) {
-      return res.status(404).json({ message: 'Invalid driver' });
+      return res.json({ message: 'Invalid driver' });
     }
 
     // Fee calculations
@@ -72,13 +72,13 @@ exports.handleBidPayment = async (req, res) => {
 
     await transaction.save();
 
-    res.status(200).json({
+    res.json({
       message: 'STK Push sent to shipper',
       data: stkRes.data
     });
 
   } catch (err) {
     console.error('STK Push error:', err);
-    res.status(500).json({ message: 'Payment error', error: err.message });
+    res.json({ message: 'Payment error', error: err.message });
   }
 };
