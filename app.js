@@ -15,7 +15,7 @@ const userAuth = require('./routes/loginRoute')
 app.use('/user/Auth',userAuth)
 
 // driver route
-const driverAuth = require('./routes/loginRoute')
+const driverAuth = require('./routes/driverRoute')
 app.use('/driver/Auth',driverAuth)
 
 //shipper route
