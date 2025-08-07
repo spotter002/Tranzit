@@ -132,7 +132,10 @@ exports.updateDriver = async (req, res) => {
             phone,
             vehicleType,
             vehicleDetails,
+            isPremium,
             licenseNumber,
+            rating,
+            isverifiedDriver,
             idNumber,
             availableForJobs
         } = req.body;
@@ -146,14 +149,17 @@ exports.updateDriver = async (req, res) => {
             driver.email = email;
             linkedUser.email = email;
         }
-
+        if (rating) driver.rating = rating;
         if (phone) driver.phone = phone;
         if (vehicleType) driver.vehicleType = vehicleType;
         if (vehicleDetails) driver.vehicleDetails = vehicleDetails;
         if (licenseNumber) driver.licenseNumber = licenseNumber;
         if (idNumber) driver.idNumber = idNumber;
         if (typeof availableForJobs === 'boolean') driver.availableForJobs = availableForJobs;
+        if (typeof isverifiedDriver === 'boolean') driver.isverifiedDriver = isverifiedDriver;
+        if (typeof isPremium === 'boolean') driver.isPremium = isPremium;
 
+      
         if (userRole) {
             if (!isAdmin) {
                 return res.json({ message: 'Only admins can update driver roles.' });
@@ -162,15 +168,15 @@ exports.updateDriver = async (req, res) => {
         }
 
         if (password) {
-            // if (!isSelf) {
-            //     return res.json({ message: 'Admins cannot update other users\' passwords.' });
-            // }
-            // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-            // if (!passwordRegex.test(password)) {
-            //     return res.json({
-            //         message: 'Password must be at least 8 characters and include uppercase, lowercase, and a number.'
-            //     });
-            // }
+            if (!isSelf) {
+                return res.json({ message: 'Admins cannot update other users\' passwords.' });
+            }
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!passwordRegex.test(password)) {
+                return res.json({
+                    message: 'Password must be at least 8 characters and include uppercase, lowercase, and a number.'
+                });
+            }
             const salt = await bcrypt.genSalt(10);
             linkedUser.password = await bcrypt.hash(password, salt);
         }
