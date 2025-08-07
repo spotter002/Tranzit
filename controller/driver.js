@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 // Register Driver
 exports.registerDriver = async (req, res) => {
     try {
-        const { name, email, password, phone, vehicleType, vehicleDetails, licenseNumber, idNumber } = req.body;
+        const { name, email, password, phone, vehicleType, vehicleDetails, licenseNumber, idNumber , isPremium } = req.body;
         const plate= vehicleDetails.plateNumber;
 
         if (!name || !email || !password || !phone || !vehicleType || !vehicleDetails || !licenseNumber || !idNumber) {
@@ -47,6 +47,7 @@ exports.registerDriver = async (req, res) => {
             isVerifiedDriver: false,
             rating: 0,
             totalCompletedJobs: 0,
+            isPremium: false,
             availableForJobs: true
         });
 
