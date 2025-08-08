@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 // Register Driver
 exports.registerDriver = async (req, res) => {
     try {
-        const { name, email, password, phone, vehicleType, vehicleDetails, licenseNumber, idNumber , isPremium } = req.body;
+        const { name, email, password, phone,photo, vehicleType, vehicleDetails, licenseNumber, idNumber , isPremium } = req.body;
         const plate= vehicleDetails.plateNumber;
 
         if (!name || !email || !password || !phone || !vehicleType || !vehicleDetails || !licenseNumber || !idNumber) {
@@ -48,7 +48,8 @@ exports.registerDriver = async (req, res) => {
             rating: 0,
             totalCompletedJobs: 0,
             isPremium: false,
-            availableForJobs: true
+            availableForJobs: true,
+            photo
         });
 
         await newDriver.save();
@@ -137,7 +138,8 @@ exports.updateDriver = async (req, res) => {
             rating,
             isverifiedDriver,
             idNumber,
-            availableForJobs
+            availableForJobs,
+            photo
         } = req.body;
 
         if (name) {
@@ -149,6 +151,7 @@ exports.updateDriver = async (req, res) => {
             driver.email = email;
             linkedUser.email = email;
         }
+        if (photo) driver.photo = photo;
         if (rating) driver.rating = rating;
         if (phone) driver.phone = phone;
         if (vehicleType) driver.vehicleType = vehicleType;
