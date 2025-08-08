@@ -32,6 +32,7 @@ const driverSchema = new Schema({
   email: { type: String },
   phone: { type: String },
   password: { type: String},
+  photo: { type: String, default: '' },
   vehicleType: { type: String, enum: ['boda','car','van','tuktuk', 'pickup', 'truck'], required: true },
   vehicleDetails: {
     plateNumber: { type: String, required: true, unique: true },
