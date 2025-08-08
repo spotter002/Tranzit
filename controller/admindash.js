@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 exports.getAdminDashboard = async (req, res) => {
   try {
     const userId = req.user.userId;
+    const objectUserId = new mongoose.Types.ObjectId(userId); // MUST use 'new' here
 
     const [
       totalUsersCount,
@@ -67,7 +68,7 @@ exports.getAdminDashboard = async (req, res) => {
       ]),
 
       Wallet.aggregate([
-        { $match: { ownerId: mongoose.Types.ObjectId(userId) } },
+        { $match: { ownerId: objectUserId } },
         {
           $project: {
             date: { $dateToString: { format: '%Y-%m-%d', date: '$updatedAt' } },
@@ -83,7 +84,7 @@ exports.getAdminDashboard = async (req, res) => {
         { $sort: { _id: 1 } }
       ]),
 
-      Wallet.findOne({ ownerId: mongoose.Types.ObjectId(userId) })
+      Wallet.findOne({ ownerId: objectUserId })
     ]);
 
     // Merge driver and shipper registrations by date for chart
@@ -115,7 +116,7 @@ exports.getAdminDashboard = async (req, res) => {
       recentDrivers: recentDriversList,
       recentShippers: recentShippersList,
       recentPayments: recentPaymentsList,
-      registrationsChartData, // drivers + shippers by date
+      registrationsChartData,
       deliveriesStatsByDate,
       walletGrowthStats
     });
