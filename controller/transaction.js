@@ -4,8 +4,7 @@ const { User, Driver, Shipper, Wallet ,Transaction } = require('../model/tranzit
 exports.createWallet = async (req, res) => {
   try {
     let ownerId = req.user.userId;
-    const user = await User.findById(ownerId).populate(['shipper', 'driver']); // Populate related models if needed
-    console.log(user)
+    const user = await User.findById(ownerId).populate(['shipper', 'driver']);
     if (!user) {
       return res.json({ message: 'User not found' });
     }
@@ -14,7 +13,6 @@ exports.createWallet = async (req, res) => {
     let ownerType = user.role;
     let name = user.name || 'Unknown';
 
-    // Determine phone number based on role
     if (user.role === 'super-admin') {
       phone = user.phone;
       ownerId = user._id;
@@ -30,22 +28,12 @@ exports.createWallet = async (req, res) => {
       return res.json({ message: 'Invalid user role' });
     }
 
-    // Check if wallet already exists
     const existingWallet = await Wallet.findOne({ phone });
     if (existingWallet) {
       return res.json({ message: 'Wallet already exists' });
     }
 
-    // Inside exports.createWallet after wallet is created
-  await Transaction.create({
-  toWallet: wallet._id,
-  amount: 0,
-  type: 'wallet_creation',
-  status: 'completed'
-});
-
-
-    // Create new wallet
+    // First create the wallet, then the transaction
     const wallet = await Wallet.create({
       phone,
       ownerType,
@@ -53,11 +41,19 @@ exports.createWallet = async (req, res) => {
       ownerId
     });
 
+    await Transaction.create({
+      toWallet: wallet._id,
+      amount: 0,
+      type: 'wallet_creation',
+      status: 'completed'
+    });
+
     res.json({ message: 'Wallet created successfully', wallet });
   } catch (err) {
     res.json({ message: 'Error creating wallet', error: err.message });
   }
 };
+
 
 //get all wallets
 exports.getAllWallets = async (req, res) => {
