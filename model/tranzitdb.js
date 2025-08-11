@@ -152,7 +152,7 @@ const transactionSchema = new mongoose.Schema({
   adminShare: { type: Number, default: 0 },
   platformShare: { type: Number, default: 0 },
   driverShare: { type: Number, default: 0 },
-  type: { type: String, enum: ['deposit', 'escrow', 'payout', 'withdrawal'], required: true },
+  type: { type: String, enum: ['deposit', 'escrow', 'payout', 'withdrawal','wallet_creation'], required: true },
   status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' }
 }, { timestamps: true });
 
