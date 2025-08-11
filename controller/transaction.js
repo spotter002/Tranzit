@@ -56,6 +56,36 @@ exports.createWallet = async (req, res) => {
 };
 
 
+// authController.js or wherever fits your auth logic
+
+exports.checkWalletStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).populate(['shipper', 'driver']);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Admin users skip wallet check
+    if (user.role === 'admin' || user.role === 'super-admin') {
+      return res.json({ hasWallet: true, isAdmin: true });
+    }
+
+    let ownerId;
+    if (user.role === 'shipper') ownerId = user.shipper?._id;
+    else if (user.role === 'driver') ownerId = user.driver?._id;
+    else ownerId = mongoose.Types.ObjectId(req.user.userId);
+
+    const wallet = await Wallet.findOne({ ownerId });
+    if (wallet) {
+      return res.json({ hasWallet: true, isAdmin: false });
+    } else {
+      return res.json({ hasWallet: false, isAdmin: false });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: 'Error checking wallet status', error: err.message });
+  }
+};
+
+
+
 //get all wallets
 exports.getAllWallets = async (req, res) => {
   try {
