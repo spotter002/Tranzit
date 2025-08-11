@@ -9,5 +9,6 @@ router.get('/get-wallet',auth, authorizeRoles('shipper', 'driver', 'admin'), wal
 router.post('/withdraw',auth, authorizeRoles('shipper', 'driver', 'admin'), walletController.withdrawFunds);
 router.get('/get-all-transactions', auth, authorizeRoles('admin'), walletController.getAllTransactions);
 router.get('/get-all-wallets', auth, authorizeRoles('admin'), walletController.getAllWallets);
+router.get('/auth/check-wallet',  auth, authorizeRoles('shipper', 'driver', 'admin'),walletController.checkWalletStatus);
 router.delete('/:id', auth, authorizeRoles('admin'), walletController.deleteWallet);
 module.exports = router;
