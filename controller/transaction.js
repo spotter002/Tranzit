@@ -36,6 +36,15 @@ exports.createWallet = async (req, res) => {
       return res.json({ message: 'Wallet already exists' });
     }
 
+    // Inside exports.createWallet after wallet is created
+  await Transaction.create({
+  toWallet: wallet._id,
+  amount: 0,
+  type: 'wallet_creation',
+  status: 'completed'
+});
+
+
     // Create new wallet
     const wallet = await Wallet.create({
       phone,
@@ -214,6 +223,21 @@ exports.deleteWallet = async (req, res) => {
     return res.json({ message: 'Wallet deleted successfully' });
   } catch (err) {
     res.json({ message: 'Error deleting wallet', error: err.message });
+  }
+};
+
+
+// get all transactions
+exports.getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await Transaction.find()
+      .populate('fromWallet', 'name phone ownerType') // optional: show wallet owner info
+      .populate('toWallet', 'name phone ownerType')
+      .sort({ createdAt: -1 }); // latest first
+
+    return res.json(transactions);
+  } catch (err) {
+    return res.json({ message: 'Error fetching transactions', error: err.message });
   }
 };
 
