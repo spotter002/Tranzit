@@ -1,13 +1,13 @@
-const { User, Driver, Shipper, Wallet, Transaction } = require('../model/tranzitdb');
+const { User, Driver, Shipper, Wallet ,Transaction } = require('../model/tranzitdb');
 const mongoose = require('mongoose');
 
-// Create a wallet
+// Create a wallet for a user or driver
 exports.createWallet = async (req, res) => {
   try {
     let ownerId = req.user.userId;
     const user = await User.findById(ownerId).populate(['shipper', 'driver']);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.json({ message: 'User not found' });
     }
 
     let phone;
@@ -26,14 +26,15 @@ exports.createWallet = async (req, res) => {
       name = user.driver?.name || name;
       ownerId = user.driver._id;
     } else {
-      return res.status(400).json({ success: false, message: 'Invalid user role' });
+      return res.json({ message: 'Invalid user role' });
     }
 
     const existingWallet = await Wallet.findOne({ phone });
     if (existingWallet) {
-      return res.status(400).json({ success: false, message: 'Wallet already exists' });
+      return res.json({ message: 'Wallet already exists' });
     }
 
+    // First create the wallet, then the transaction
     const wallet = await Wallet.create({
       phone,
       ownerType,
@@ -48,141 +49,157 @@ exports.createWallet = async (req, res) => {
       status: 'completed'
     });
 
-    res.json({ success: true, message: 'Wallet created successfully', wallet });
+    res.json({ message: 'Wallet created successfully', wallet });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error creating wallet', error: err.message });
+    res.json({ message: 'Error creating wallet', error: err.message });
   }
 };
 
-// Get wallet
+
+//get all wallets
+exports.getAllWallets = async (req, res) => {
+  try {
+    const wallets = await Wallet.find();
+    res.json(wallets);
+  } catch (err) {
+    res.json({ message: 'Error getting wallets', error: err.message });
+  }
+}
+
+// get wallet by id 
 exports.getWallet = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).populate(['shipper', 'driver']);
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user) return res.json({ message: 'User not found' });
 
     let ownerId;
+
     if (user.role === 'shipper') ownerId = user.shipper?._id;
     else if (user.role === 'driver') ownerId = user.driver?._id;
-    else ownerId = mongoose.Types.ObjectId(req.user.userId);
+    else ownerId = mongoose.Types.ObjectId(req.user.userId); // super-admin or admin
 
     const wallet = await Wallet.findOne({ ownerId });
-    if (!wallet) return res.status(404).json({ success: false, message: 'Wallet not found' });
+    if (!wallet) return res.json({ message: 'Wallet not found' });
 
-    return res.json({ success: true, wallet });
+    return res.json(wallet);
   } catch (err) {
-    return res.status(500).json({ success: false, message: 'Error getting wallet', error: err.message });
+    return res.json({ message: 'Error getting wallet', error: err.message });
   }
 };
 
-// Deposit
+
+// Deposit funds into shipper's wallet
 exports.depositFunds = async (req, res) => {
   try {
-    const shipperId = req.user.userId;
-    const { amount } = req.body;
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ success: false, message: 'Enter a valid amount' });
+    const shipperId = req.user.userId
+    console.log("Shipper Id",shipperId)
+    const{amount} = req.body
+    if (!shipperId || !amount) {
+      return res.json({ message: 'Login to deposit funds' });
     }
 
-    const shipper = await User.findById(shipperId).populate('shipper');
-    if (!shipper) return res.status(404).json({ success: false, message: 'Shipper not found' });
-
+    const shipper = await User.findById({_id: shipperId}).populate('shipper');
+    if (!shipper) return res.json({ message: 'Shipper not found' });
+    console.log("Our Shipper =",shipper)
     const wallet = await Wallet.findOne({ phone: shipper.shipper.phone });
-    if (!wallet) return res.status(404).json({ success: false, message: 'Wallet not found' });
+    if (!wallet) return res.json({ message: 'Wallet not found' });
 
     wallet.balance += amount;
     await wallet.save();
 
-    await Transaction.create({
+    const transaction = new Transaction({
       toWallet: wallet._id,
       amount,
       type: 'deposit',
       status: 'completed'
     });
+    await transaction.save();
 
-    return res.json({ success: true, message: 'Deposit successful', wallet });
+    return res.json({ message: 'Deposit successful', wallet });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error depositing funds', error: err.message });
+    res.json({ message: 'Error depositing funds', error: err.message });
   }
 };
 
-// Withdraw
+// withdraw funds
 exports.withdrawFunds = async (req, res) => {
-  try {
-    const shipperId = req.user.userId;
-    const { amount } = req.body;
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ success: false, message: 'Enter a valid amount' });
+   try {
+    const shipperId = req.user.userId
+    console.log("Shipper Id",shipperId)
+    const{amount} = req.body
+    if (!shipperId || !amount) {
+      return res.json({ message: 'Login to deposit funds' });
     }
 
-    const shipper = await User.findById(shipperId).populate('shipper');
-    if (!shipper) return res.status(404).json({ success: false, message: 'Shipper not found' });
-
+    const shipper = await User.findById({_id: shipperId}).populate('shipper');
+    if (!shipper) return res.json({ message: 'Shipper not found' });
+    console.log("Our Shipper =",shipper)
     const wallet = await Wallet.findOne({ phone: shipper.shipper.phone });
-    if (!wallet) return res.status(404).json({ success: false, message: 'Wallet not found' });
-
-    if (wallet.balance < amount) {
-      return res.status(400).json({ success: false, message: 'Insufficient funds' });
-    }
+    if (!wallet) return res.json({ message: 'Wallet not found' });
 
     wallet.balance -= amount;
     await wallet.save();
 
-    await Transaction.create({
+    const transaction = new Transaction({
       fromWallet: wallet._id,
       amount,
       type: 'withdrawal',
       status: 'completed'
     });
+    await transaction.save();
 
-    return res.json({ success: true, message: 'Withdrawal successful', wallet });
+    return res.json({ message: 'withdraw successful', wallet });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error withdrawing funds', error: err.message });
+    res.json({ message: 'Error depositing funds', error: err.message });
   }
 };
 
-// Pay Driver
+// Transfer funds with 80/20 split (escrow logic)
 exports.payDriver = async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const { amount, driverId } = req.body;
-
-    if (!amount || amount <= 0 || !driverId) {
-      return res.status(400).json({ success: false, message: 'Driver ID and valid amount are required' });
+    const userId = req.user.userId
+    const user = await User.findById(userId)
+    const shipperId = user.shipper._id
+    const{amount , driverId } = req.body
+    const shipper = await Shipper.findById(shipperId)
+    const shipperPhone = shipper.phone
+    const driver = await Driver.findById({_id: driverId})
+    const driverPhone = driver.phone
+   
+    if (!shipperPhone) {
+      return res.json({ message: 'login to transfer funds' });
     }
-
-    const user = await User.findById(userId).populate('shipper');
-    const shipperId = user.shipper._id;
-    const shipperPhone = user.shipper.phone;
-
-    const driver = await Driver.findById(driverId);
-    const driverPhone = driver.phone;
+    if( !driverPhone || !amount){
+      return res.json({ message: ' driver id, and amount are required' });
+    }
 
     const shipperWallet = await Wallet.findOne({ phone: shipperPhone });
     const driverWallet = await Wallet.findOne({ phone: driverPhone });
+    if (!shipperWallet) return res.json({ message: 'Shipper wallet not found' });
+    if (!driverWallet) return res.json({ message: 'Driver wallet not found' });
 
-    if (!shipperWallet) return res.status(404).json({ success: false, message: 'Shipper wallet not found' });
-    if (!driverWallet) return res.status(404).json({ success: false, message: 'Driver wallet not found' });
+    // Check balance
+    if (shipperWallet.balance < amount) return res.json({ message: 'Insufficient funds in shipper wallet' });
 
-    if (shipperWallet.balance < amount) {
-      return res.status(400).json({ success: false, message: 'Insufficient funds in shipper wallet' });
-    }
-
+    // Deduct from shipper
     shipperWallet.balance -= amount;
     await shipperWallet.save();
 
+    // Split 80/20
     const platformShare = amount * 0.20;
     const driverShare = amount * 0.80;
 
+    // Add to driver
     driverWallet.balance += driverShare;
     await driverWallet.save();
 
-    const AdminWallet = await Wallet.findOne({ ownerType: 'super-admin' });
-    if (AdminWallet) {
-      AdminWallet.balance += platformShare;
-      await AdminWallet.save();
-    }
+    // send platformShare to users wallet
+    const AdminWallet = await Wallet.findOne({ ownerType: 'super-admin' })
+    AdminWallet.balance += platformShare
+    await AdminWallet.save()
 
-    await Transaction.create({
+    // Log transaction
+    const transaction = new Transaction({
       fromWallet: shipperWallet._id,
       toWallet: driverWallet._id,
       amount,
@@ -193,13 +210,68 @@ exports.payDriver = async (req, res) => {
       status: 'completed'
     });
 
+    await transaction.save();
+
     return res.json({
-      success: true,
       message: `Payment of ${amount} successful. Driver received ${driverShare}, Platform kept ${platformShare}.`,
       shipperWallet,
       driverWallet
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error processing payment', error: err.message });
+    res.json({ message: 'Error processing payment', error: err.message });
+  }
+};
+
+// delete wallet 
+exports.deleteWallet = async (req, res) => {
+  try {
+    const wallet = await Wallet.findByIdAndDelete(req.params.id);
+    if (!wallet) return res.json({ message: 'Wallet not found' });
+    return res.json({ message: 'Wallet deleted successfully' });
+  } catch (err) {
+    res.json({ message: 'Error deleting wallet', error: err.message });
+  }
+};
+
+
+// get all transactions
+exports.getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await Transaction.find()
+      .populate('fromWallet', 'name phone ownerType') // optional: show wallet owner info
+      .populate('toWallet', 'name phone ownerType')
+      .sort({ createdAt: -1 }); // latest first
+
+    return res.json(transactions);
+  } catch (err) {
+    return res.json({ message: 'Error fetching transactions', error: err.message });
+  }
+};
+
+// authController.js or wherever fits your auth logic
+
+exports.checkWalletStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).populate(['shipper', 'driver']);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Admin users skip wallet check
+    if (user.role === 'admin' || user.role === 'super-admin') {
+      return res.json({ hasWallet: true, isAdmin: true });
+    }
+
+    let ownerId;
+    if (user.role === 'shipper') ownerId = user.shipper?._id;
+    else if (user.role === 'driver') ownerId = user.driver?._id;
+    else ownerId = mongoose.Types.ObjectId(req.user.userId);
+
+    const wallet = await Wallet.findOne({ ownerId });
+    if (wallet) {
+      return res.json({ hasWallet: true, isAdmin: false });
+    } else {
+      return res.json({ hasWallet: false, isAdmin: false });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: 'Error checking wallet status', error: err.message });
   }
 };
