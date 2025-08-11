@@ -1,4 +1,5 @@
 const { User, Driver, Shipper, Wallet ,Transaction } = require('../model/tranzitdb');
+const mongoose = require('mongoose');
 
 // Create a wallet for a user or driver
 exports.createWallet = async (req, res) => {
@@ -68,14 +69,24 @@ exports.getAllWallets = async (req, res) => {
 // get wallet by id 
 exports.getWallet = async (req, res) => {
   try {
-    const walletId = req.user.userId
-    const wallet = await Wallet.findOne({ownerId: walletId});
+    const user = await User.findById(req.user.userId).populate(['shipper', 'driver']);
+    if (!user) return res.json({ message: 'User not found' });
+
+    let ownerId;
+
+    if (user.role === 'shipper') ownerId = user.shipper?._id;
+    else if (user.role === 'driver') ownerId = user.driver?._id;
+    else ownerId = mongoose.Types.ObjectId(req.user.userId); // super-admin or admin
+
+    const wallet = await Wallet.findOne({ ownerId });
     if (!wallet) return res.json({ message: 'Wallet not found' });
+
     return res.json(wallet);
   } catch (err) {
-    res.json({ message: 'Error getting wallet', error: err.message });
+    return res.json({ message: 'Error getting wallet', error: err.message });
   }
 };
+
 
 // Deposit funds into shipper's wallet
 exports.depositFunds = async (req, res) => {
