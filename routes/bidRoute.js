@@ -8,7 +8,7 @@ router.get('/:id', bidController.getBidById);
 router.post('/', bidController.createBid);
 
 router.get('/:id', driverController.getBidsByDriver);
-router.get('/', bidController.getBid);
+router.get('/', bidController.getAllBids);
 router.put('/:id', bidController.updateBid);
 router.delete('/:id', bidController.deleteBid);
 
