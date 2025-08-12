@@ -7,7 +7,7 @@ const driverController = require('../controller/driver')
 router.get('/:id', bidController.getBidById);
 router.post('/', bidController.createBid);
 
-router.get('/:id', driverController.getBidsByDriver);
+router.get('/driver/:id', driverController.getBidsByDriver);
 router.get('/', bidController.getAllBids);
 router.put('/:id', bidController.updateBid);
 router.delete('/:id', bidController.deleteBid);
