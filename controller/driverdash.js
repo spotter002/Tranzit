@@ -1,79 +1,90 @@
 // controllers/driverController.js
-const { User, Driver, Delivery, Shipper, Wallet, Transaction } = require('../model/tranzitdb');
+const { User, Driver, Delivery, Shipper, Wallet, Transaction, Rating } = require('../model/tranzitdb');
+const mongoose = require('mongoose');
 
 exports.getDriverDashboard = async (req, res) => {
   try {
     const userId = req.user.userId;
     const user = await User.findById(userId).populate('driver');
+    if (!user || !user.driver) {
+      return res.status(404).json({ message: 'Driver profile not found' });
+    }
+
     const driverId = user.driver._id;
 
     // Wallet info
     const wallet = await Wallet.findOne({ ownerId: driverId });
 
-    // Job stats
+    // Jobs
     const assignedJobs = await Delivery.find({ driverId, status: 'assigned' });
     const completedJobs = await Delivery.countDocuments({ driverId, status: 'completed' });
-    const inProgressJobs = await Delivery.countDocuments({ driverId, status: 'in-progress' });
+    const pendingJobs = await Delivery.countDocuments({ driverId, status: 'pending' });
     const cancelledJobs = await Delivery.countDocuments({ driverId, status: 'cancelled' });
 
-    // Earnings breakdown (last 7 days)
-    const last7DaysEarnings = await Transaction.aggregate([
-      { $match: { ownerId: driverId, type: 'credit', createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } },
+    // Recent jobs
+    const recentJobs = await Delivery.find({ driverId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('shipper', 'name')
+      .select('pickupLocation dropoffLocation status price createdAt');
+
+    // Earnings over last 7 days
+    const earningsLast7Days = await Transaction.aggregate([
+      { $match: { driverId: new mongoose.Types.ObjectId(driverId), type: 'credit' } },
       {
         $group: {
-          _id: { $dayOfMonth: "$createdAt" },
-          date: { $first: "$createdAt" },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
           total: { $sum: "$amount" }
         }
       },
-      { $sort: { date: 1 } }
+      { $sort: { _id: 1 } }
     ]);
 
-    // Top shippers worked with
-    const topShippers = await Delivery.aggregate([
-      { $match: { driverId, status: 'completed' } },
-      { $group: { _id: "$shipperId", jobs: { $sum: 1 } } },
-      { $sort: { jobs: -1 } },
-      { $limit: 5 },
-      {
-        $lookup: {
-          from: "shippers",
-          localField: "_id",
-          foreignField: "_id",
-          as: "shipperDetails"
-        }
-      },
-      { $unwind: "$shipperDetails" },
-      { $project: { _id: 0, name: "$shipperDetails.name", jobs: 1 } }
-    ]);
-
-    // Monthly earnings trend (last 6 months)
-    const monthlyEarnings = await Transaction.aggregate([
-      { $match: { ownerId: driverId, type: 'credit', createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) } } },
+    // Ratings
+    const ratingsData = await Rating.aggregate([
+      { $match: { driverId: new mongoose.Types.ObjectId(driverId) } },
       {
         $group: {
-          _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } },
-          total: { $sum: "$amount" }
+          _id: null,
+          avgRating: { $avg: "$stars" },
+          totalRatings: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Top pickup & dropoff locations
+    const topLocations = await Delivery.aggregate([
+      { $match: { driverId: new mongoose.Types.ObjectId(driverId) } },
+      {
+        $group: {
+          _id: "$pickupLocation",
+          count: { $sum: 1 }
         }
       },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
+      { $sort: { count: -1 } },
+      { $limit: 5 }
     ]);
 
     res.json({
-      earnings: wallet?.balance || 0,
-      jobStats: {
-        completedJobs,
-        assignedJobs: assignedJobs.length,
-        inProgressJobs,
-        cancelledJobs
+      walletBalance: wallet?.balance || 0,
+      jobs: {
+        assigned: assignedJobs.length,
+        completed: completedJobs,
+        pending: pendingJobs,
+        cancelled: cancelledJobs
       },
-      recentEarnings: last7DaysEarnings.map(e => ({
-        date: e.date,
-        total: e.total
-      })),
-      monthlyEarnings,
-      topShippers,
-      activeJobs: assignedJobs, // so they can see them in detail
+      earningsLast7Days,
+      ratings: ratingsData[0] || { avgRating: 0, totalRatings: 0 },
+      recentJobs,
+      topPickupLocations: topLocations,
+      charts: {
+        jobStatus: [
+          { label: 'Assigned', value: assignedJobs.length },
+          { label: 'Completed', value: completedJobs },
+          { label: 'Pending', value: pendingJobs },
+          { label: 'Cancelled', value: cancelledJobs }
+        ]
+      }
     });
 
   } catch (error) {
