@@ -87,12 +87,8 @@ exports.getDriver = async (req, res) => {
 // Get Driver by ID
 exports.getDriverById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.json({message:'User not found'})
-        }
-            console.log('the logged in useris',user)
-        const driver = user.driver._id
+        const driverId = req.params.id
+        const driver = await Driver.findById(driverId);
         if (!driver) {
             return res.json({ message: 'Driver not found' });
         }
