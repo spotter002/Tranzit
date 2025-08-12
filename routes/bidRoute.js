@@ -7,9 +7,12 @@ const driverController = require('../controller/driver')
 router.get('/:id', bidController.getBidById);
 router.post('/', bidController.createBid);
 
-router.get('/driver/:id', driverController.getBidsByDriver);
+// ✅ point to the right controller & match param name
+router.get('/driver/:driverId', bidController.getBidsByDriver);
+
 router.get('/', bidController.getAllBids);
 router.put('/:id', bidController.updateBid);
 router.delete('/:id', bidController.deleteBid);
+
 
 module.exports = router;
