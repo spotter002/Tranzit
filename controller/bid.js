@@ -34,18 +34,18 @@ exports.createBid = async (req, res) => {
   }
 };
 
-// // 📄 Get all Bids
-// exports.getAllBids = async (req, res) => {
-//   try {
-//     const bids = await Bid.find()
-//       .populate('jobId', 'cargoTitle pickup dropoff')
-//       .populate('driverId', 'name email phone');
-//     res.json(bids);
-//   } catch (error) {
-//     console.error(error);
-//     res.json({ message: 'Server error', error: error.message });
-//   }
-// };
+// 📄 Get all Bids
+exports.getAllBids = async (req, res) => {
+  try {
+    const bids = await Bid.find()
+      .populate('jobId', 'cargoTitle pickup dropoff')
+      .populate('driverId', 'name email phone');
+    res.json(bids);
+  } catch (error) {
+    console.error(error);
+    res.json({ message: 'Server error', error: error.message });
+  }
+};
 
 // 📄 Get Bid by ID
 exports.getBidById = async (req, res) => {
