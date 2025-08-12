@@ -97,3 +97,19 @@ exports.deleteRating = async (req, res) => {
     res.json({ message: 'Server error', error: error.message });
   }
 };
+
+
+// GET /featured/top-rated
+exports.getTopRatedDrivers = async (req, res) => {
+  try {
+    const topDrivers = await Rating.aggregate([
+      { $group: { _id: "$driverId", avgRating: { $avg: "$stars" } } },
+      { $sort: { avgRating: -1 } },
+      { $limit: 5 }
+    ]);
+    res.json(topDrivers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
