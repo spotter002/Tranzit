@@ -8,6 +8,7 @@ router.post('/', ratingController.createRating);
 router.get('/rating',auth, driverController.getDriverRatings);
 router.get('/', ratingController.getAllRatings);
 router.get('/:id', ratingController.getRatingById);
+router.get('/top-rated', ratingController.getTopRatedDrivers);
 router.put('/:id', ratingController.updateRating);
 router.delete('/:id', ratingController.deleteRating);
 
