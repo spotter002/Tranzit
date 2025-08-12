@@ -43,7 +43,7 @@ const driverSchema = new Schema({
   idNumber: { type: String },
   isVerifiedDriver: { type: Boolean, default: true },
   rating: { type: Number, default: 0 },
-  isPremium:{ type: Boolean, default:0 },
+  isPremium:{ type: Boolean, default:false },
   totalCompletedJobs: { type: Number, default: 0 },
   availableForJobs: { type: Boolean, default: true }
 }, { timestamps: true });
