@@ -86,17 +86,30 @@ exports.getDriver = async (req, res) => {
 
 // Get Driver by ID
 exports.getDriverById = async (req, res) => {
-    try {
-        const driverId = req.params.id
-        const driver = await Driver.findById(driverId);
-        if (!driver) {
-            return res.json({ message: 'Driver not found' });
-        }
-        res.json(driver);
-    } catch (error) {
-        res.json({ message: 'Server error', error: error.message });
+  try {
+    const userId = req.params.id;
+
+    // 1. Find the User by ID, populate the 'driver' ref field
+    const user = await User.findById(userId).populate('driver');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    // 2. Check if user has a driver profile linked
+    if (!user.driver) {
+      return res.status(404).json({ message: 'Driver profile not found for this user' });
+    }
+
+    // 3. Return the populated driver document
+    res.status(200).json(user.driver);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 };
+
 
 // Update Driver
 exports.updateDriver = async (req, res) => {
