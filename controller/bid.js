@@ -93,3 +93,17 @@ exports.deleteBid = async (req, res) => {
     res.json({ message: 'Server error', error: error.message });
   }
 };
+
+// 📄 Get all bids by a specific driver
+exports.getBidsByDriver = async (req, res) => {
+  try {
+    const bids = await Bid.find({ driverId: req.params.driverId })
+      .populate('jobId', 'cargoTitle pickup dropoff')
+      .sort({ createdAt: -1 });
+    res.json(bids);
+  } catch (error) {
+    console.error(error);
+    res.json({ message: 'Server error', error: error.message });
+  }
+};
+
