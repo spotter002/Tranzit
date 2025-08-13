@@ -105,7 +105,8 @@ exports.depositFunds = async (req, res) => {
     const driver = user.driver
     if (!shipper && !driver) return res.json({ message: 'Account not found' });
     console.log("Our Shipper =",shipper)
-    const wallet = await Wallet.findOne({phone: shipper.shipper.phone} ||{ phone: driver.driver.phone});
+    console.log("Our Driver =",driver)
+    const wallet = await Wallet.findOne({phone: shipper.phone} ||{ phone: driver.phone});
     if (!wallet) return res.json({ message: 'Wallet not found' });
 
     wallet.balance += amount;
@@ -143,7 +144,8 @@ exports.withdrawFunds = async (req, res) => {
     const driver = user.driver
     if (!shipper && !driver) return res.json({ message: 'Account not found' });
     console.log("Our Shipper =",shipper)
-    const wallet = await Wallet.findOne({phone: shipper.shipper.phone} ||{ phone: driver.driver.phone});
+    console.log("Our Driver =",driver)
+    const wallet = await Wallet.findOne({phone: shipper.phone} ||{ phone: driver.phone});
     if (!wallet) return res.json({ message: 'Wallet not found' });
 
     wallet.balance -= amount;
