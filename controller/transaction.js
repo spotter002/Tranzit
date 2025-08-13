@@ -29,7 +29,7 @@ exports.createWallet = async (req, res) => {
       return res.json({ message: 'Invalid user role' });
     }
 
-    const existingWallet = await Wallet.findOne({ phone });
+    const existingWallet = await Wallet.findOne({ ownerId });
     if (existingWallet) {
       return res.json({ message: 'Wallet already exists' });
     }
@@ -101,7 +101,7 @@ exports.depositFunds = async (req, res) => {
     const user = await User.findById(userId).populate(['shipper', 'driver']);
     if (!user) return res.json({ message: 'User not found' });
 
-    console.log('user',user);
+    // console.log('user',user);
     let ownerId;
     if (user.role === 'shipper') ownerId = user.shipper?._id;
     else if (user.role === 'driver') ownerId = user.driver?._id;
@@ -139,7 +139,7 @@ exports.withdrawFunds = async (req, res) => {
     const user = await User.findById(userId).populate(['shipper', 'driver']);
     if (!user) return res.json({ message: 'User not found' });
 
-    console.log('user',user);
+    // console.log('user',user);
     let ownerId;
     if (user.role === 'shipper') ownerId = user.shipper?._id;
     else if (user.role === 'driver') ownerId = user.driver?._id;
