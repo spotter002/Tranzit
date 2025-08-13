@@ -91,7 +91,7 @@ exports.getWallet = async (req, res) => {
 // Deposit funds into shipper's wallet
 exports.depositFunds = async (req, res) => {
   try {
-    const userId = req.user.userId
+    const userId = req.params.id;
     console.log("user Id",userId)
     const{amount} = req.body
     if (!userId || !amount) {
@@ -125,10 +125,11 @@ exports.depositFunds = async (req, res) => {
   }
 };
 
+
 // withdraw funds
 exports.withdrawFunds = async (req, res) => {
    try {
-    const userId = req.user.userId
+    const userId = req.params.id;
     console.log("user Id",userId)
     const{amount} = req.body
     if (!userId || !amount) {
