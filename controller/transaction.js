@@ -249,13 +249,34 @@ exports.deleteWallet = async (req, res) => {
 };
 
 
-// get all transactions
+// get transactions depending on role
 exports.getAllTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find()
-      .populate('fromWallet', 'name phone ownerType') // optional: show wallet owner info
+    const user = await User.findById(req.user.userId).populate(['shipper', 'driver']);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    let filter = {};
+
+    // Admins see everything
+    if (user.role !== 'admin' && user.role !== 'super-admin') {
+      let ownerId;
+      if (user.role === 'shipper') ownerId = user.shipper?._id;
+      else if (user.role === 'driver') ownerId = user.driver?._id;
+      else ownerId = mongoose.Types.ObjectId(req.user.userId);
+
+      // filter transactions involving this wallet
+      filter = { 
+        $or: [
+          { fromWallet: ownerId }, 
+          { toWallet: ownerId }
+        ]
+      };
+    }
+
+    const transactions = await Transaction.find(filter)
+      .populate('fromWallet', 'name phone ownerType')
       .populate('toWallet', 'name phone ownerType')
-      .sort({ createdAt: -1 }); // latest first
+      .sort({ createdAt: -1 });
 
     return res.json(transactions);
   } catch (err) {
