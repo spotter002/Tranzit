@@ -262,7 +262,7 @@ exports.getAllTransactions = async (req, res) => {
       let ownerId;
       if (user.role === 'shipper') ownerId = user.shipper?._id;
       else if (user.role === 'driver') ownerId = user.driver?._id;
-      else ownerId = mongoose.Types.ObjectId(req.user.userId);
+      // else ownerId = mongoose.Types.ObjectId(req.user.userId);
 
       // filter transactions involving this wallet
       filter = { 
