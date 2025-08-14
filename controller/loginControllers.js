@@ -67,7 +67,7 @@ exports.loginUser = async (req,res) => {
         if(!valid){return res.json({message:"invalid credentials"})}
 
         // generate token
-        const token = jwt.sign({userId: user._id, role: user.role},process.env.JWT_SECRET,{expiresIn:'4800h'})
+        const token = jwt.sign({userId: user._id, role: user.role, name: user.name,  email: user.email},process.env.JWT_SECRET,{expiresIn:'4800h'})
 
         //return user data without password
        res.json({message: 'Login successful',
