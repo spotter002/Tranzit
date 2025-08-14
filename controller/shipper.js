@@ -52,11 +52,15 @@ exports.getAllShippers = async (req, res) => {
 // get shipper by ID
 exports.getShipperById = async (req, res) => {
     try {
-        const shipper = await Shipper.findById(req.params.id);
-        if (!shipper) {
-            return res.json({ message: 'Shipper not found' });
+        const userId = req.params.id;
+        const user = await User.findById(userId).populate('shipper');
+        if (!user) {
+            return res.json({ message: 'user not found' });
         }
-        res.json(shipper);
+        if (!user.shipper) {
+            return res.json({ message: 'shipper not found' });
+        }
+        res.json(user.shipper);
     } catch (error) {
         res.json({ message: 'Error getting shipper', error: error.message });
     }
@@ -149,3 +153,5 @@ exports.deleteShipper = async (req, res) => {
         res.json({ message: 'Error deleting shipper', error: error.message });
     }
 };
+
+
