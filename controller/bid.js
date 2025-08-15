@@ -94,16 +94,31 @@ exports.deleteBid = async (req, res) => {
   }
 };
 
-// 📄 Get all bids by a specific driver
+// 📄 Get all bids by the authenticated driver
 exports.getBidsByDriver = async (req, res) => {
   try {
-    const bids = await Bid.find({ driverId: req.params.driverId })
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Login required' });
+    }
+
+    const user = await User.findById(userId).populate(['shipper', 'driver']);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user.driver) return res.status(404).json({ message: 'User driver profile not found' });
+
+    const driverId = user.driver._id;
+    if (!driverId) return res.status(404).json({ message: 'Driver not found' });
+
+    const bids = await Bid.find({ driverId })
       .populate('jobId', 'cargoTitle pickup dropoff')
       .sort({ createdAt: -1 });
+
     res.json(bids);
   } catch (error) {
     console.error(error);
-    res.json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
