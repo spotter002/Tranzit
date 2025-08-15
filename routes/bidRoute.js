@@ -15,10 +15,10 @@ router.put('/:id', bidController.updateBid);
 router.delete('/:id', bidController.deleteBid);
 
 // NEW: Get bids for specific job
-router.get('/job/:jobId', authMiddleware, bidController.getBidsByJob);
+router.get('/job/:jobId', bidController.getBidsByJob);
 
 // NEW: Accept bid and reject others
-router.post('/accept/:bidId', authMiddleware, bidController.acceptBid);
+router.post('/accept/:bidId', bidController.acceptBid);
 
 
 module.exports = router;
