@@ -13,7 +13,10 @@ exports.createBid = async (req, res) => {
     const user = await User.findById(userId).populate(['shipper', 'driver']);
     if (!user) return res.json({ message: 'User not found' });
     if (!user.driver) return res.json({ message: 'User driver profile not found' });
-    const driverId = user.driver.driver._id;
+    const driverId = user.driver._id;
+    console.log('user.driver._id',user.driver._id)
+    console.log('user.driver',user.driver)
+    console.log('user._id',user._id)
     // Optional: validate driver & job
     const driverExists = await Driver.findById(driverId);
     // console.log(driverExists)
