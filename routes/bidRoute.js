@@ -1,26 +1,64 @@
 const express = require('express');
 const router = express.Router();
 const bidController = require('../controller/bid');
-const driverController = require('../controller/driver')
-const {auth, authorizeRoles} = require('../middleware/auth')
+const { auth, authorizeRoles } = require('../middleware/auth');
 
+// More specific routes first
+router.get(
+  '/job/:jobId',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.getBidsByJob
+);
 
-// NEW: Get bids for specific job
-router.get('/job/:jobId',auth, authorizeRoles('shipper', 'driver', 'admin'), bidController.getBidsByJob);
+router.post(
+  '/accept/:bidId',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.acceptBid
+);
 
-// NEW: Accept bid and reject others
-router.post('/accept/:bidId',auth, authorizeRoles('shipper', 'driver', 'admin'), bidController.acceptBid);
+router.get(
+  '/driver/:driverId',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.getBidsByDriver
+);
 
+// General routes
+router.get(
+  '/',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.getAllBids
+);
 
-// ✅ point to the right controller & match param name
-router.get('/driver/:driverId',auth, authorizeRoles('shipper', 'driver', 'admin'), bidController.getBidsByDriver);
+router.post(
+  '/',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.createBid
+);
 
-router.get('/',auth, authorizeRoles('shipper', 'driver', 'admin'), bidController.getAllBids);
-router.post('/',auth, authorizeRoles('shipper', 'driver', 'admin'), bidController.createBid);
-router.put('/:id',auth, authorizeRoles('shipper', 'driver', 'admin'), bidController.updateBid);
-router.delete('/:id',auth, authorizeRoles('shipper', 'driver', 'admin'), bidController.deleteBid);
+router.put(
+  '/:id',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.updateBid
+);
 
+router.delete(
+  '/:id',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.deleteBid
+);
 
-router.get('/:id',auth, authorizeRoles('shipper', 'driver', 'admin'), bidController.getBidById);
+router.get(
+  '/:id',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.getBidById
+);
 
 module.exports = router;
