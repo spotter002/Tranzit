@@ -122,3 +122,47 @@ exports.getBidsByDriver = async (req, res) => {
 };
 
 
+// 📄 Get bids for a specific job
+exports.getBidsByJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const bids = await Bid.find({ jobId })
+      .populate('driverId', 'name email phone')
+      .sort({ createdAt: -1 });
+    res.json(bids);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ✅ Accept a bid and reject others
+exports.acceptBid = async (req, res) => {
+  try {
+    const { bidId } = req.params;
+
+    const bid = await Bid.findById(bidId);
+    if (!bid) return res.status(404).json({ message: 'Bid not found' });
+
+    // Accept this bid
+    bid.status = 'accepted';
+    await bid.save();
+
+    // Reject all other bids for the same job
+    await Bid.updateMany(
+      { jobId: bid.jobId, _id: { $ne: bidId } },
+      { $set: { status: 'rejected' } }
+    );
+
+    // Optionally update delivery with driverId
+    await Delivery.findByIdAndUpdate(bid.jobId, {
+      driverId: bid.driverId,
+      status: 'assigned'
+    });
+
+    res.json({ message: 'Bid accepted and others rejected' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
