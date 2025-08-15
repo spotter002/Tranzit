@@ -1,28 +1,46 @@
 const { Bid, Driver, Delivery, User } = require('../model/tranzitdb');
 
+const mongoose = require('mongoose');
+
 // 📤 Create a Bid
 exports.createBid = async (req, res) => {
   const { jobId, amount, estimatedArrivalMinutes } = req.body;
 
   try {
+    // ✅ Validate required fields
     if (!jobId || !amount) {
-      return res.json({ message: 'Missing required fields' });
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // ✅ Validate ObjectId format early to avoid CastError
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return res.status(400).json({ message: 'Invalid job ID format' });
     }
 
     const userId = req.user.userId;
-    const user = await User.findById(userId).populate('driver');
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID format' });
+    }
 
-    if (!user) return res.json({ message: 'User not found' });
-    if (!user.driver) return res.json({ message: 'User driver profile not found' });
+    // ✅ Fetch and validate user & driver
+    const user = await User.findById(userId).populate('driver');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user.driver) return res.status(404).json({ message: 'User driver profile not found' });
 
     const driverId = user.driver._id;
+    if (!mongoose.Types.ObjectId.isValid(driverId)) {
+      return res.status(400).json({ message: 'Invalid driver ID format' });
+    }
 
+    // ✅ Ensure driver exists
     const driverExists = await Driver.findById(driverId);
-    if (!driverExists) return res.json({ message: 'Driver not found' });
+    if (!driverExists) return res.status(404).json({ message: 'Driver not found' });
 
+    // ✅ Ensure job exists
     const jobExists = await Delivery.findById(jobId);
-    if (!jobExists) return res.json({ message: 'Job/Delivery not found' });
+    if (!jobExists) return res.status(404).json({ message: 'Job/Delivery not found' });
 
+    // ✅ Create and save bid
     const newBid = new Bid({
       jobId,
       driverId,
@@ -31,12 +49,14 @@ exports.createBid = async (req, res) => {
     });
 
     await newBid.save();
+
     res.json({ message: 'Bid created successfully', bid: newBid });
   } catch (error) {
     console.error(error);
-    res.json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
 
 // 📄 Get all Bids
