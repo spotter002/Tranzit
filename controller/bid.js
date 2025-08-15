@@ -21,25 +21,27 @@ exports.createBid = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: 'Invalid user ID format' });
     }
+    console.log('userId', userId);
 
     // ✅ Fetch and validate user & driver
     const user = await User.findById(userId).populate('driver');
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (!user.driver) return res.status(404).json({ message: 'User driver profile not found' });
-
+    console.log('user', user);
+    console.log('user.driver', user.driver);
     const driverId = user.driver._id;
     if (!mongoose.Types.ObjectId.isValid(driverId)) {
       return res.status(400).json({ message: 'Invalid driver ID format' });
     }
-
+    console.log('driverId', driverId);
     // ✅ Ensure driver exists
     const driverExists = await Driver.findById(driverId);
     if (!driverExists) return res.status(404).json({ message: 'Driver not found' });
-
+    console
     // ✅ Ensure job exists
     const jobExists = await Delivery.findById(jobId);
     if (!jobExists) return res.status(404).json({ message: 'Job/Delivery not found' });
-
+    console.log('jobExists', jobExists);
     // ✅ Create and save bid
     const newBid = new Bid({
       jobId,
@@ -49,7 +51,7 @@ exports.createBid = async (req, res) => {
     });
 
     await newBid.save();
-
+    console.log('newBid', newBid);
     res.json({ message: 'Bid created successfully', bid: newBid });
   } catch (error) {
     console.error(error);
