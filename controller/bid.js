@@ -1,4 +1,4 @@
-const { Bid, Driver, Delivery } = require('../model/tranzitdb');
+const { Bid, Driver, Delivery, User } = require('../model/tranzitdb');
 
 // 📤 Create a Bid
 exports.createBid = async (req, res) => {
@@ -9,7 +9,11 @@ exports.createBid = async (req, res) => {
     if (!jobId || !driverId || !amount) {
       return res.json({ message: 'Missing required fields' });
     }
-
+    const userId = req.user.userId;
+    const user = await User.findById(userId).populate(['shipper', 'driver']);
+    if (!user) return res.json({ message: 'User not found' });
+    if (!user.driver) return res.json({ message: 'User driver profile not found' });
+    const driverId = user.driver._id;
     // Optional: validate driver & job
     const driverExists = await Driver.findById(driverId);
     // console.log(driverExists)
