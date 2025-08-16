@@ -198,17 +198,17 @@ exports.acceptBid = async (req, res) => {
 // bidController.js
 exports.updateBidStatus = async (req, res) => {
   try {
-    const { status } = req.params.status; // "picked_up", "delivered", etc.
+    const { newStatus } = req.params.newStatus; // "picked_up", "delivered", etc.
     const allowedStatuses = ["assigned", "picked_up", "delivered"];
 
-    if (!allowedStatuses.includes(status)) {
+    if (!allowedStatuses.includes(newStatus)) {
       return res.status(400).json({ message: "Invalid status" });
     }
 
     const bid = await Bid.findById(req.params.bidId);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
-    bid.status = status;
+    bid.status = newStatus;
     await bid.save();
 
     res.json({ message: "Bid status updated", bid });
