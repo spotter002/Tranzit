@@ -18,6 +18,15 @@ router.post(
   bidController.acceptBid
 );
 
+// PATCH /bid/:bidId/status
+router.patch(
+  '/:bidId/status',
+  auth,
+  authorizeRoles('shipper', 'driver', 'admin'),
+  bidController.updateBidStatus
+);
+
+
 router.get(
   '/driver/:driverId',
   auth,
