@@ -20,7 +20,7 @@ router.post(
 
 // PATCH /bid/:bidId/status
 router.patch(
-  '/:bidId/status',
+  '/:bidId/:status',
   auth,
   authorizeRoles('shipper', 'driver', 'admin'),
   bidController.updateBidStatus

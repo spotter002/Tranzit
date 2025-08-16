@@ -198,7 +198,7 @@ exports.acceptBid = async (req, res) => {
 // bidController.js
 exports.updateBidStatus = async (req, res) => {
   try {
-    const { status } = req.body; // "picked_up", "delivered", etc.
+    const { status } = req.params.status; // "picked_up", "delivered", etc.
     const allowedStatuses = ["assigned", "picked_up", "delivered"];
 
     if (!allowedStatuses.includes(status)) {
