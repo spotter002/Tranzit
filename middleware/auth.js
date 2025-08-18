@@ -1,43 +1,69 @@
-// import jwt from 'jsonwebtoken';
-const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET 
+// auth.js
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET;
 
-const auth=(req,res,next)=>{
-    //extract the authorization header
- const authHeader = req.headers.authorization
- // get the token from the header
- const token = authHeader && authHeader.split(' ')[1]
+const auth = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
 
- // check if we have the token 
- if(!token){
-     return res.json({message: 'Unauthorized access, please login'})
- }
- try {
-    // verify the token using the secret key
-     const decode = jwt.verify(token, JWT_SECRET)
-     // we attatch the payload to the request object
-        req.user = decode
-        // console.log(req.user)
-        //proceed to the next middleware or route handler
-        next()
- } catch (error) {
-     return res.json({message: 'Internal server error', error: error.message})
-    
- }
-}
-
-// middleware to authorize user based on role
-// accwpts any number of allowed roles(eg: ['admin', 'teacher'])
-//...params -accepts any number of arguments and automatically puts them into an array
-const authorizeRoles = (...allowedRoles) => {
-    return (req, res, next) => {
-        // check if the user role is in the allowed roles
-        if (!req.user || !allowedRoles.includes(req.user.role)) {
-            return res.json({message: 'Access denied: You do not have permission to perform this action'})
-        }
-        //proceed to the next middleware or route handler
-        next()
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized access, please login" });
     }
-}
 
-module.exports = {auth, authorizeRoles}
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized access, please login" });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+
+    // Debug logging
+    console.log("🔑 Decoded token:", decoded);
+
+    next();
+  } catch (error) {
+    return res
+      .status(401)
+      .json({ message: "Token invalid or expired", error: error.message });
+  }
+};
+
+/**
+ * Middleware to authorize roles
+ * - Supports multiple roles
+ * - Case-insensitive comparison
+ * - Trims accidental spaces
+ */
+const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      return res
+        .status(403)
+        .json({ message: "Access denied: No role found in token" });
+    }
+
+    const userRole = String(req.user.role).trim().toLowerCase();
+    const normalizedRoles = allowedRoles.map((r) =>
+      String(r).trim().toLowerCase()
+    );
+
+    console.log("🎭 User role:", userRole);
+    console.log("✅ Allowed roles:", normalizedRoles);
+
+    if (!normalizedRoles.includes(userRole)) {
+      return res.status(403).json({
+        message: `Access denied: Your role "${req.user.role}" is not authorized`,
+      });
+    }
+
+    next();
+  };
+};
+
+module.exports = { auth, authorizeRoles };
