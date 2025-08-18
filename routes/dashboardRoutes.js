@@ -5,7 +5,11 @@ const router = express.Router();
 const  AdminDashboard = require('../controller/admindash');
 const  ShipperDashboard  = require('../controller/shipperdash');
 const  DriverDashboard  = require('../controller/driverdash');
+const  SuperAdminDashboard  = require('../controller/superadmindash');
 const  {auth , authorizeRoles}  = require('../middleware/auth');
+
+// SuperAdminDashboard  
+router.get('/super-admin', auth , authorizeRoles('super-admin'), SuperAdminDashboard.getSuperAdminDashboard);
 
 // Admin Dashboard
 router.get('/admin', auth , authorizeRoles('super-admin','admin'), AdminDashboard.getAdminDashboard);
