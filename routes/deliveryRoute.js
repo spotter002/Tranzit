@@ -7,6 +7,6 @@ const {auth, authorizeRoles} = require('../middleware/auth')
 router.post('/', auth,DeliveryController.createDelivery)
 router.get('/',DeliveryController.getAllDeliveries)
 router.get('/:id',auth, DeliveryController.getDeliveryById)
-router.put('/:id',auth, authorizeRoles('admin','shipper' ), DeliveryController.updateDelivery)
-router.delete('/:id',auth, authorizeRoles('admin' , 'shipper'), DeliveryController.deleteDelivery)
+router.put('/:id',auth, authorizeRoles('admin','super-admin','shipper' ), DeliveryController.updateDelivery)
+router.delete('/:id',auth, authorizeRoles('admin','super-admin' , 'shipper'), DeliveryController.deleteDelivery)
 module.exports = router

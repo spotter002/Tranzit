@@ -176,22 +176,22 @@ exports.withdrawFunds = async (req, res) => {
 exports.payDriver = async (req, res) => {
   try {
     const userId = req.user.userId
-    console.log('userId',userId);
+    // console.log('userId',userId);
     const user = await User.findById(userId)
-    console.log('user',user);
+    // console.log('user',user);
     const shipperId = user.shipper._id
-    console.log('shipperId',shipperId);
+    // console.log('shipperId',shipperId);
     const{amount , driverId } = req.body
-    console.log('amount',amount);
-    console.log('driverId',driverId);
+    // console.log('amount',amount);
+    // console.log('driverId',driverId);
     const shipper = await Shipper.findById(shipperId)
-    console.log('shipper',shipper);
+    // console.log('shipper',shipper);
     const shipperPhone = shipper.phone
-    console.log('shipperPhone',shipperPhone);
+    // console.log('shipperPhone',shipperPhone);
     const driver = await Driver.findById({_id: driverId})
-    console.log('driver',driver);
+    // console.log('driver',driver);
     const driverPhone = driver.phone
-    console.log('driverPhone',driverPhone);
+    // console.log('driverPhone',driverPhone);
    
     if (!shipperPhone) {
       return res.json({ message: 'login to transfer funds' });
@@ -201,9 +201,9 @@ exports.payDriver = async (req, res) => {
     }
 
     const shipperWallet = await Wallet.findOne({ phone: shipperPhone });
-    console.log('shipperWallet',shipperWallet);
+    // console.log('shipperWallet',shipperWallet);
     const driverWallet = await Wallet.findOne({ phone: driverPhone });
-    console.log('driverWallet',driverWallet);
+    // console.log('driverWallet',driverWallet);
     if (!shipperWallet) return res.json({ message: 'Shipper wallet not found' });
     if (!driverWallet) return res.json({ message: 'Driver wallet not found' });
 
@@ -224,7 +224,7 @@ exports.payDriver = async (req, res) => {
 
     // send platformShare to users wallet
     const AdminWallet = await Wallet.findOne({ ownerType: 'super-admin' })
-    console.log('AdminWallet',AdminWallet);
+    // console.log('AdminWallet',AdminWallet);
     AdminWallet.balance += platformShare
     await AdminWallet.save()
 
@@ -239,7 +239,7 @@ exports.payDriver = async (req, res) => {
       type: 'escrow',
       status: 'completed'
     });
-    console.log('transaction',transaction);
+    // console.log('transaction',transaction);
 
     await transaction.save();
 

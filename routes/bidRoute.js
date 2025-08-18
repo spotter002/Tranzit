@@ -7,14 +7,14 @@ const { auth, authorizeRoles } = require('../middleware/auth');
 router.get(
   '/job/:jobId',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.getBidsByJob
 );
 
 router.post(
   '/accept/:bidId',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.acceptBid
 );
 
@@ -22,7 +22,7 @@ router.post(
 router.patch(
   '/:bidId/:newStatus',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.updateBidStatus
 );
 
@@ -30,7 +30,7 @@ router.patch(
 router.get(
   '/driver/:driverId',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.getBidsByDriver
 );
 
@@ -38,35 +38,35 @@ router.get(
 router.get(
   '/',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.getAllBids
 );
 
 router.post(
   '/',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.createBid
 );
 
 router.put(
   '/:id',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.updateBid
 );
 
 router.delete(
   '/:id',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.deleteBid
 );
 
 router.get(
   '/:id',
   auth,
-  authorizeRoles('shipper', 'driver', 'admin'),
+  authorizeRoles('shipper', 'driver', 'admin','super-admin'),
   bidController.getBidById
 );
 

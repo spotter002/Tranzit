@@ -6,6 +6,6 @@ const {auth, authorizeRoles} = require('../middleware/auth')
 router.post('/driver/register', driverController.registerDriver)
 router.get('/driver', driverController.getDriver)
 router.get('/driver/:id', driverController.getDriverById)
-router.put('/driver/:id',auth, authorizeRoles('admin'), driverController.updateDriver)
-router.delete('/driver/:id',auth, authorizeRoles('admin'), driverController.deleteDriver)
+router.put('/driver/:id',auth, authorizeRoles('admin','super-admin'), driverController.updateDriver)
+router.delete('/driver/:id',auth, authorizeRoles('admin','super-admin'), driverController.deleteDriver)
 module.exports = router
