@@ -195,9 +195,10 @@ exports.acceptBid = async (req, res) => {
 };
 
 
+
 exports.updateBidStatus = async (req, res) => {
   try {
-    const { bidId } = req.params.bidId;
+    const bidId = req.params.bidId;
     const newStatus = req.params.newStatus; // ✅ Correct
     const allowedStatuses = ["assigned", "picked_up", "delivered"];
 
