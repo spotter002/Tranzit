@@ -1,15 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const ratingController = require('../controller/rating');
-const driverController = require('../controller/driver');
+const driverController = require('../controller/driver'); // already being used
+const { auth, authorizeRoles } = require('../middleware/auth');
 
-const {auth, authorizeRoles} = require('../middleware/auth')
-router.post('/', ratingController.createRating);
-router.get('/rating',auth, driverController.getDriverRatings);
-router.get('/', ratingController.getAllRatings);
+// ⭐ Create rating
+router.post('/', auth, ratingController.createRating);
+
+// ⭐ Get all ratings
+router.get('/',auth, ratingController.getAllRatings);
+
+// ⭐ Get ratings by shipper userId
+router.get('/shipper/:id', ratingController.getRatingsByShipper);
+
+// ⭐ Get ratings by driver userId
+router.get('/driver/:id', ratingController.getRatingsByDriver);
+
+// ⭐ Top rated drivers
+router.get('/featured/top-rated-drivers', ratingController.getTopRatedDrivers);
+
+// ⭐ Top rated shippers
+router.get('/featured/top-rated-shippers', ratingController.getTopRatedShippers);
+
+// ⭐ Update rating
+router.put('/:id', auth, ratingController.updateRating);
+
+// ❌ Delete rating
+router.delete('/:id', auth, ratingController.deleteRating);
+
+// ⭐ Get single rating(s) by userId (checks driver/shipper)
 router.get('/:id', ratingController.getRatingById);
-router.get('/top-rated', ratingController.getTopRatedDrivers);
-router.put('/:id', ratingController.updateRating);
-router.delete('/:id', ratingController.deleteRating);
+
 
 module.exports = router;
