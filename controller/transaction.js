@@ -69,26 +69,35 @@ exports.getAllWallets = async (req, res) => {
 // get wallet by id 
 exports.getWallet = async (req, res) => {
   try {
-    
     const user = await User.findById(req.user.userId).populate(['shipper', 'driver']);
-    console.log('user',user);
-    if (!user) return res.json({ message: 'User not found' });
+    console.log('user', user);
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     let ownerId;
 
-    if (user.role === 'shipper') ownerId = user.shipper?._id;
-    else if (user.role === 'driver') ownerId = user.driver?._id;
-    else ownerId = mongoose.Types.ObjectId(req.user.userId); // super-admin or admin
+    if (user.role === 'shipper' && user.shipper) {
+      ownerId = user.shipper._id;
+    } else if (user.role === 'driver' && user.driver) {
+      ownerId = user.driver._id;
+    } else {
+      // For admin/super-admin, just use the user._id
+      ownerId = user._id;
+    }
 
-    console.log('ownerId',ownerId);
+    console.log('ownerId', ownerId);
+
     const wallet = await Wallet.findOne({ ownerId });
-    if (!wallet) return res.json({ message: 'Wallet not found' });
-    console.log('wallet',wallet);
+    if (!wallet) return res.status(404).json({ message: 'Wallet not found' });
+
+    console.log('wallet', wallet);
     return res.json(wallet);
   } catch (err) {
-    return res.json({ message: 'Error getting wallet', error: err.message });
+    console.error(err);
+    return res.status(500).json({ message: 'Error getting wallet', error: err.message });
   }
 };
+
 
 
 // Deposit funds into logged-in user's wallet
