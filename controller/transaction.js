@@ -113,11 +113,15 @@ exports.depositFunds = async (req, res) => {
     const user = await User.findById(userId).populate(['shipper', 'driver']);
     if (!user) return res.json({ message: 'User not found' });
 
-    // console.log('user',user);
     let ownerId;
-    if (user.role === 'shipper') ownerId = user.shipper?._id;
-    else if (user.role === 'driver') ownerId = user.driver?._id;
-    else ownerId = mongoose.Types.ObjectId(userId); // super-admin or admin
+    if (user.role === 'shipper' && user.shipper) {
+      ownerId = user.shipper._id;
+    } else if (user.role === 'driver' && user.driver) {
+      ownerId = user.driver._id;
+    } else {
+      // For admin/super-admin, just use the user._id
+      ownerId = user._id;
+    }
 
     const wallet = await Wallet.findOne({ ownerId });
     if (!wallet) return res.json({ message: 'Wallet not found' });
@@ -137,7 +141,6 @@ exports.depositFunds = async (req, res) => {
     res.json({ message: 'Error depositing funds', error: err.message });
   }
 };
-
 // Withdraw funds from logged-in user's wallet
 exports.withdrawFunds = async (req, res) => {
   try {
@@ -151,11 +154,15 @@ exports.withdrawFunds = async (req, res) => {
     const user = await User.findById(userId).populate(['shipper', 'driver']);
     if (!user) return res.json({ message: 'User not found' });
 
-    // console.log('user',user);
     let ownerId;
-    if (user.role === 'shipper') ownerId = user.shipper?._id;
-    else if (user.role === 'driver') ownerId = user.driver?._id;
-    else ownerId = mongoose.Types.ObjectId(userId); // super-admin or admin
+    if (user.role === 'shipper' && user.shipper) {
+      ownerId = user.shipper._id;
+    } else if (user.role === 'driver' && user.driver) {
+      ownerId = user.driver._id;
+    } else {
+      // For admin/super-admin, just use the user._id
+      ownerId = user._id;
+    }
 
     const wallet = await Wallet.findOne({ ownerId });
     if (!wallet) return res.json({ message: 'Wallet not found' });
@@ -179,6 +186,7 @@ exports.withdrawFunds = async (req, res) => {
     res.json({ message: 'Error withdrawing funds', error: err.message });
   }
 };
+
 
 
 // Transfer funds with 80/20 split (escrow logic)
@@ -285,9 +293,13 @@ exports.getAllTransactions = async (req, res) => {
     // Admins see everything
     if (user.role !== 'admin' && user.role !== 'super-admin') {
       let ownerId;
-      if (user.role === 'shipper') ownerId = user.shipper?._id;
-      else if (user.role === 'driver') ownerId = user.driver?._id;
-      // else ownerId = mongoose.Types.ObjectId(req.user.userId);
+      if (user.role === 'shipper' && user.shipper) {
+        ownerId = user.shipper._id;
+      } else if (user.role === 'driver' && user.driver) {
+        ownerId = user.driver._id;
+      } else {
+        ownerId = user._id;
+      }
 
       // filter transactions involving this wallet
       filter = { 
@@ -309,7 +321,6 @@ exports.getAllTransactions = async (req, res) => {
   }
 };
 
-// authController.js or wherever fits your auth logic
 
 exports.checkWalletStatus = async (req, res) => {
   try {
@@ -322,9 +333,13 @@ exports.checkWalletStatus = async (req, res) => {
     }
 
     let ownerId;
-    if (user.role === 'shipper') ownerId = user.shipper?._id;
-    else if (user.role === 'driver') ownerId = user.driver?._id;
-    else ownerId = mongoose.Types.ObjectId(req.user.userId);
+    if (user.role === 'shipper' && user.shipper) {
+      ownerId = user.shipper._id;
+    } else if (user.role === 'driver' && user.driver) {
+      ownerId = user.driver._id;
+    } else {
+      ownerId = user._id;
+    }
 
     const wallet = await Wallet.findOne({ ownerId });
     if (wallet) {
