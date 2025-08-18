@@ -212,6 +212,8 @@ exports.updateBidStatus = async (req, res) => {
 
     res.json({ message: "Bid status updated", bid });
   } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  console.error("❌ updateBidStatus error:", err);
+  res.status(500).json({ message: "Server error", error: err.message });
+}
+
 };
