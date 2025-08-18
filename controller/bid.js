@@ -197,6 +197,7 @@ exports.acceptBid = async (req, res) => {
 
 exports.updateBidStatus = async (req, res) => {
   try {
+    const { bidId } = req.params.bidId;
     const newStatus = req.params.newStatus; // ✅ Correct
     const allowedStatuses = ["assigned", "picked_up", "delivered"];
 
@@ -204,16 +205,46 @@ exports.updateBidStatus = async (req, res) => {
       return res.status(400).json({ message: "Invalid status" });
     }
 
-    const bid = await Bid.findById(req.params.bidId);
+     // Find the bid
+    const bid = await Bid.findById(bidId);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
-    bid.status = newStatus;
-    await bid.save();
+    // Find the related delivery
+    const delivery = await Delivery.findById(bid.jobId);
+    if (!delivery) return res.status(404).json({ message: "Delivery not found" });
 
-    res.json({ message: "Bid status updated", bid });
+    delivery.status = newStatus;
+   await delivery.save();
+
+    res.json({ message: "Delivery status updated", delivery });
   } catch (err) {
-  console.error("❌ updateBidStatus error:", err);
-  res.status(500).json({ message: "Server error", error: err.message });
-}
-
+    console.error("❌ Error marking as picked up:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
+
+// const { Bid, Delivery } = require('../models');
+
+// exports.markAsPickedUp = async (req, res) => {
+//   try {
+//     const { bidId } = req.params;
+
+//     // Find the bid
+//     const bid = await Bid.findById(bidId);
+//     if (!bid) return res.status(404).json({ message: "Bid not found" });
+
+//     // Find the related delivery
+//     const delivery = await Delivery.findById(bid.jobId);
+//     if (!delivery) return res.status(404).json({ message: "Delivery not found" });
+
+//     // Update delivery status
+//     delivery.status = "picked_up";
+//     await delivery.save();
+
+//     res.json({ message: "Delivery status updated", delivery });
+//   } catch (err) {
+//     console.error("❌ Error marking as picked up:", err);
+//     res.status(500).json({ message: "Server error", error: err.message });
+//   }
+// };
+
