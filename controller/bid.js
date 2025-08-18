@@ -201,6 +201,9 @@ exports.updateBidStatus = async (req, res) => {
     const newStatus = req.params.newStatus; // ✅ Correct
     const allowedStatuses = ["assigned", "picked_up", "delivered"];
 
+    console.log('bidId', bidId);
+    console.log('newStatus', newStatus);
+
     if (!allowedStatuses.includes(newStatus)) {
       return res.status(400).json({ message: "Invalid status" });
     }
@@ -209,10 +212,11 @@ exports.updateBidStatus = async (req, res) => {
     const bid = await Bid.findById(bidId);
     if (!bid) return res.status(404).json({ message: "Bid not found" });
 
+    console.log('bid', bid);
     // Find the related delivery
     const delivery = await Delivery.findById(bid.jobId);
     if (!delivery) return res.status(404).json({ message: "Delivery not found" });
-
+     console.log('delivery', delivery);
     delivery.status = newStatus;
    await delivery.save();
 
