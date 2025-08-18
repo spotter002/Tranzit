@@ -69,7 +69,9 @@ exports.getAllWallets = async (req, res) => {
 // get wallet by id 
 exports.getWallet = async (req, res) => {
   try {
+    
     const user = await User.findById(req.user.userId).populate(['shipper', 'driver']);
+    console.log('user',user);
     if (!user) return res.json({ message: 'User not found' });
 
     let ownerId;
@@ -78,9 +80,10 @@ exports.getWallet = async (req, res) => {
     else if (user.role === 'driver') ownerId = user.driver?._id;
     else ownerId = mongoose.Types.ObjectId(req.user.userId); // super-admin or admin
 
+    console.log('ownerId',ownerId);
     const wallet = await Wallet.findOne({ ownerId });
     if (!wallet) return res.json({ message: 'Wallet not found' });
-
+    console.log('wallet',wallet);
     return res.json(wallet);
   } catch (err) {
     return res.json({ message: 'Error getting wallet', error: err.message });
