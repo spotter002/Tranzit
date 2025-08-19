@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 exports.getAdminDashboard = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const objectUserId = new mongoose.Types.ObjectId(userId); // MUST use 'new' here
+    const objectUserId = new mongoose.Types.ObjectId(userId); // MUST use 'new'
 
     const [
       totalUsersCount,
@@ -69,6 +69,7 @@ exports.getAdminDashboard = async (req, res) => {
 
       Wallet.aggregate([
         { $match: { ownerId: objectUserId } },
+        { $sort: { updatedAt: 1 } }, // ✅ ensure $last works correctly
         {
           $project: {
             date: { $dateToString: { format: '%Y-%m-%d', date: '$updatedAt' } },
@@ -87,7 +88,25 @@ exports.getAdminDashboard = async (req, res) => {
       Wallet.findOne({ ownerId: objectUserId })
     ]);
 
-    // Merge driver and shipper registrations by date for chart
+    // ✅ Earnings by date (transactions grouped)
+    const adminEarningsByDate = await Transaction.aggregate([
+      { $match: { walletOwnerId: objectUserId } },
+      {
+        $project: {
+          date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          amount: 1
+        }
+      },
+      {
+        $group: {
+          _id: "$date",
+          dailyEarnings: { $sum: "$amount" }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // ✅ Merge driver + shipper registrations into chart data
     const registrationDatesSet = new Set();
     driversRegistrations.forEach(d => registrationDatesSet.add(d._id));
     shippersRegistrations.forEach(s => registrationDatesSet.add(s._id));
@@ -118,7 +137,8 @@ exports.getAdminDashboard = async (req, res) => {
       recentPayments: recentPaymentsList,
       registrationsChartData,
       deliveriesStatsByDate,
-      walletGrowthStats
+      walletGrowthStats,       // old style (wallet balance growth)
+      adminEarningsByDate      // new style (daily earnings)
     });
   } catch (error) {
     console.error('Dashboard fetch error:', error);
