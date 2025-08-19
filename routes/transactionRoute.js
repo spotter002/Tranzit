@@ -8,7 +8,7 @@ router.post('/pay-driver', auth, authorizeRoles('shipper', 'driver', 'admin','su
 router.get('/get-wallet',auth, authorizeRoles('shipper', 'driver', 'admin','super-admin'), walletController.getWallet);
 router.post('/withdraw',auth, authorizeRoles('shipper', 'driver', 'admin','super-admin'), walletController.withdrawFunds);
 router.get('/get-all-transactions', auth, authorizeRoles('admin','super-admin'), walletController.getAllTransactions);
-router.get('/get-all-wallets', auth, authorizeRoles('admin'), walletController.getAllWallets);
+router.get('/get-all-wallets', auth, authorizeRoles('admin','super-admin'), walletController.getAllWallets);
 router.get('/auth/check-wallet',  auth, authorizeRoles('shipper', 'driver', 'admin','super-admin'),walletController.checkWalletStatus);
 router.delete('/:id', auth, authorizeRoles('admin','super-admin'), walletController.deleteWallet);
 module.exports = router;
