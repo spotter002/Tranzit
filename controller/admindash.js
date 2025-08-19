@@ -28,7 +28,7 @@ exports.getAdminDashboard = async (req, res) => {
       Driver.countDocuments(),
       Shipper.countDocuments(),
       Delivery.countDocuments({ status: 'pending' }),
-      Delivery.countDocuments({ status: 'completed' }),
+      Delivery.countDocuments({ status: 'delivered' }),
       Wallet.aggregate([{ $group: { _id: null, total: { $sum: '$balance' } } }]),
       User.find({ role: 'admin' }).sort({ createdAt: -1 }).limit(5).lean(),
       User.find({ role: { $ne: 'admin' } }).sort({ createdAt: -1 }).limit(5).lean(),
@@ -60,7 +60,7 @@ exports.getAdminDashboard = async (req, res) => {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
             total: { $sum: 1 },
             completed: {
-              $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
+              $sum: { $cond: [{ $eq: ['$status', 'delivered'] }, 1, 0] }
             }
           }
         },
