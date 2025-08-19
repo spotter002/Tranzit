@@ -156,19 +156,24 @@ exports.getRatingsByShipper = async (req, res) => {
   };
 
   // get ratings by driver
-  exports.getRatingsByDriver = async (req, res) => {
-    try {
-       const userId = req.params.id;
-       console.log('userId',userId)
+ // get ratings by driver
+exports.getRatingsByDriver = async (req, res) => {
+  try {
+    const userId = req.params.id;
     const user = await User.findById(userId);
-    console.log('user',user)
+    if (!user?.driver?._id) return res.status(404).json({ message: "Driver not found" });
+
     const driverId = user.driver._id;
-    console.log('driverId',driverId)
-      const ratings = await Rating.find({ driverId: driverId });
-      console.log('ratings',ratings)
-      res.json(ratings);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-      }
-    };
+
+    const ratings = await Rating.find({ driverId })
+      .populate('jobId', 'cargoTitle pickup dropoff') // populate job details
+      .populate('shipperId', 'name email') // populate shipper details
+      .populate('driverId', 'name email'); // optional: include driver info
+
+    res.json(ratings);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
